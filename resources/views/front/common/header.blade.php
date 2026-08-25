@@ -7,7 +7,7 @@
 
     <!-- LOGO -->
     <a class="navbar-brand" href="/">
-      <img src="images/logo/7th-acoms-mnemonic.svg" alt="7th ACOMS Trainee Conference">
+      <img src="{{ asset('images/logo/7th-acoms-mnemonic.svg') }}" alt="7th ACOMS Trainee Conference">
     </a>
 
     <!-- Offcanvas toggle (mobile) -->
@@ -38,7 +38,7 @@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
   <div class="offcanvas-header border-bottom">
     <a href="#" class="navbar-brand">
-      <img src="images/logo/7th-acoms-mnemonic.svg" alt="7th ACOMS" style="height:50px;width:auto;">
+      <img src="{{ asset('images/logo/7th-acoms-mnemonic.svg') }}" alt="7th ACOMS" style="height:50px;width:auto;">
     </a>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>

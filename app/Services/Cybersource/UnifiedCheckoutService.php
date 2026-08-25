@@ -355,13 +355,25 @@ class UnifiedCheckoutService
     }
 
     /**
-     * Pull the reason value out of a 400 response body, for logging.
+     * Pull the reason value out of an error response body, for logging.
+     *
+     * The gateway is not consistent about where it puts this. Validation and
+     * profile errors use a top-level `reason` or `message`, but an
+     * authentication rejection answers {"response":{"rmsg":"..."}} instead —
+     * so that nested field has to be read too, or a 401 logs no reason at all.
      */
     private function reasonFrom(string $body): ?string
     {
         $decoded = json_decode($body, true);
 
-        return is_array($decoded) ? ($decoded['reason'] ?? $decoded['message'] ?? null) : null;
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded['reason']
+            ?? $decoded['message']
+            ?? $decoded['response']['rmsg']
+            ?? null;
     }
 
     /**

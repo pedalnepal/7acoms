@@ -58,6 +58,6 @@
 
   <div class="footer-bottom">
     Copyright &copy; 2026 NAOMS. All rights reserved. Powered by
-    <a href="#"><img src="images/pedal-logo-light.svg"></a>
+    <a href="#"><img src="{{ asset('images/pedal-logo-light.svg') }}"></a>
   </div>
 </footer>
