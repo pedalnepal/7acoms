@@ -200,7 +200,21 @@
       // application authorises the payment server-side.
       checkout = await client.createCheckout({ autoProcessing: false });
 
+      // The SDK can fail to render (e.g. a browser it does not support)
+      // without ever rejecting mount() or firing client.on('error') — it just
+      // never fires 'ready', leaving the spinner spinning forever with no
+      // visible error. This timeout is the only thing that catches that case.
+      var ready = false;
+      var readyTimeout = setTimeout(function () {
+        if (ready) return;
+        if (loadingEl) loadingEl.remove();
+        showError('The payment form is taking too long to load. Please refresh the page and try again — if it keeps happening, try a different browser or device, or contact the organising committee.');
+      }, 15000);
+
       checkout.on('ready', function () {
+        ready = true;
+        clearTimeout(readyTimeout);
+        clearError();
         if (loadingEl) loadingEl.remove();
       });
 

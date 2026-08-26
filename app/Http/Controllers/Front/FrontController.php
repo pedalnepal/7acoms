@@ -248,13 +248,13 @@ class FrontController extends Controller
             'idCard'        => 'required|file|mimes:jpg,jpeg,png|max:4096',
             'nationality'   => 'required|string|max:50',
             'naomsMember'   => 'required|string|max:10',
-            'memberId'      => 'nullable|string|max:100',
+            'memberId'      => 'nullable|required_if:naomsMember,Yes|string|max:100',
             'regFor'        => 'required|string|max:100',
             'accommodation' => 'required|string|max:10',
-            'accRooms'      => 'nullable|integer|min:0',
-            'accType'       => 'nullable|string|max:50',
+            'accRooms'      => 'nullable|required_if:accommodation,Yes|integer|min:1',
+            'accType'       => 'nullable|required_if:accommodation,Yes|string|max:50',
             'accompanying'  => 'required|string|max:10',
-            'acpCount'      => 'nullable|integer|min:0',
+            'acpCount'      => 'nullable|required_if:accompanying,Yes|integer|min:1',
             'category'      => 'required|string|max:255',
             'paymentReceipt'=> 'nullable|file|mimes:jpg,jpeg,png|max:4096',
             'others'        => 'nullable|string',
@@ -264,6 +264,10 @@ class FrontController extends Controller
             'paymentReceipt.mimes' => 'The payment receipt must be a JPG or PNG image.',
             'paymentReceipt.max'   => 'The payment receipt may not be larger than 4 MB.',
             'category.required'    => 'Please choose the registration category that applies to you.',
+            'memberId.required_if' => 'Please enter your NAOMS membership ID.',
+            'accRooms.required_if' => 'Please specify how many rooms you need.',
+            'accType.required_if'  => 'Please select a room type.',
+            'acpCount.required_if' => 'Please specify how many accompanying people you are bringing.',
         ]);
 
         $reg = new \App\Models\Registration;

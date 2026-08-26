@@ -390,17 +390,22 @@
   wireUpload('payFile', 'payDrop', 'payChosen', 'payFileName', 'payRemove');
 
   // ---- Conditional reveal panels ----
-  function wireConditional(name, showValue, wrapId) {
+  // requiredFieldIds are only enforced while their panel is shown, so a
+  // delegate who answers "No" is never blocked by a hidden required field.
+  function wireConditional(name, showValue, wrapId, requiredFieldIds) {
     var wrap = document.getElementById(wrapId);
+    var requiredFields = (requiredFieldIds || []).map(function (id) { return document.getElementById(id); });
     document.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
       r.addEventListener('change', function () {
-        wrap.classList.toggle('show', r.checked && r.value === showValue);
+        var visible = r.checked && r.value === showValue;
+        wrap.classList.toggle('show', visible);
+        requiredFields.forEach(function (field) { field.required = visible; });
       });
     });
   }
-  wireConditional('naomsMember', 'Yes', 'memberIdWrap');
-  wireConditional('accommodation', 'Yes', 'accWrap');
-  wireConditional('accompanying', 'Yes', 'acpWrap');
+  wireConditional('naomsMember', 'Yes', 'memberIdWrap', ['memberId']);
+  wireConditional('accommodation', 'Yes', 'accWrap', ['accRooms', 'accType']);
+  wireConditional('accompanying', 'Yes', 'acpWrap', ['acpCount']);
 
   // ---- Submit handler: client-side validation, then submit to the server ----
   (function () {
