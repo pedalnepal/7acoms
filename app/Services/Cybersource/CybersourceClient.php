@@ -99,7 +99,11 @@ class CybersourceClient
             'v-c-merchant-id' => $merchantId,
             'Date'            => $date,
             'Host'            => $host,
-            'Accept'          => 'application/json',
+            // The REST API serves HAL. Asking for plain application/json makes
+            // /pts/v2/payments answer 404 "Resource not found" as plain text —
+            // the request never reaches validation — while the Sessions API
+            // happens to tolerate it. Ask for what the API actually produces.
+            'Accept'          => 'application/hal+json;charset=utf-8',
         ];
 
         $signedNames = ['host', 'date', '(request-target)'];
