@@ -228,6 +228,16 @@ class UnifiedCheckoutService
             $payload['clientVersion'] = $version;
         }
 
+        // Only sent when configured, so the gateway's defaults stand otherwise.
+        $completeMandate = array_filter([
+            'type'                   => config('cybersource.complete_mandate_type'),
+            'consumerAuthentication' => config('cybersource.consumer_authentication'),
+        ]);
+
+        if ($completeMandate) {
+            $payload['completeMandate'] = $completeMandate;
+        }
+
         // Prefilling what we already know saves the delegate re-typing it.
         if ($billTo = $this->cleanBillTo($order)) {
             $payload['data']['orderInformation']['billTo'] = $billTo;

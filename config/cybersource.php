@@ -70,6 +70,23 @@ return [
 
     /*
     |----------------------------------------------------------------------
+    | Complete mandate
+    |----------------------------------------------------------------------
+    |
+    | Both are omitted from the capture context unless set, leaving the
+    | gateway's own defaults (type CAPTURE, payer authentication on) in place.
+    |
+    | type: AUTH, CAPTURE or PREFER_AUTH.
+    | consumer_authentication: NONE, 3DS or PASSKEY. Set NONE to take payer
+    | authentication (3-D Secure) out of the flow while diagnosing.
+    |
+    */
+
+    'complete_mandate_type'   => env('CYBS_COMPLETE_MANDATE_TYPE'),
+    'consumer_authentication' => env('CYBS_CONSUMER_AUTH'),
+
+    /*
+    |----------------------------------------------------------------------
     | Processing
     |----------------------------------------------------------------------
     |
