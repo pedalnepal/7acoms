@@ -117,16 +117,31 @@ class UnifiedCheckoutService
 
         $response = $this->client->post('/pts/v2/payments', $payload);
 
-        $body   = $response->json() ?? [];
-        $status = (string) ($body['status'] ?? ($response->successful() ? 'UNKNOWN' : 'ERROR'));
+        $body     = $response->json() ?? [];
+        $status   = (string) ($body['status'] ?? ($response->successful() ? 'UNKNOWN' : 'ERROR'));
+        $approved = $response->successful() && in_array($status, self::ACCEPTED_STATUSES, true);
+
+        // The HTTP status and raw body are what actually explain a failure that
+        // isn't a clean gateway decline (an auth/permission/routing problem at
+        // Cybersource looks identical to a decline otherwise — same ERROR status,
+        // no reason, no message). Keep both so that's diagnosable from the stored
+        // transaction alone, without having to replay the request by hand.
+        if (! $approved) {
+            Log::warning('Unified Checkout authorization not approved', [
+                'reference'   => $order['reference'],
+                'http_status' => $response->status(),
+                'status'      => $status,
+                'body'        => $response->body() !== '' ? $response->body() : '(empty body)',
+            ]);
+        }
 
         return [
             'status'         => $status,
             'transaction_id' => $body['id'] ?? null,
             'reason'         => $body['reason'] ?? null,
             'message'        => $body['message'] ?? ($body['errorInformation']['message'] ?? null),
-            'approved'       => $response->successful() && in_array($status, self::ACCEPTED_STATUSES, true),
-            'raw'            => $body,
+            'approved'       => $approved,
+            'raw'            => $body + ['http_status' => $response->status()],
         ];
     }
 
