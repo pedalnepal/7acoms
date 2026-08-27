@@ -29,10 +29,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php($i = ($registrations->currentPage()-1)*$registrations->perPage())
+                        @php
+                            // Block form deliberately: Blade pairs raw php blocks with a
+                            // non-greedy match, so the parenthesised inline form here would
+                            // pair with the block terminator further down this file and
+                            // swallow every directive in between, including the loop.
+                            $i = ($registrations->currentPage() - 1) * $registrations->perPage();
+                        @endphp
                         @if($registrations->count())
                         @foreach($registrations as $registration)
-                        @php($i++)
+                        @php $i++; @endphp
                         <tr>
                             <th scope="row">{{$i}}</th>
                             <td>{{$registration->full_name}}</td>
