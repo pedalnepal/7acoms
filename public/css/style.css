@@ -862,6 +862,26 @@
     }
     textarea.form-control { line-height: 1.7; resize: vertical; }
 
+    /* invalid field highlight (set by the registration form's submit handler) */
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+      border-color: var(--red);
+      background-color: #fdf2f3;
+    }
+    .form-control.is-invalid:focus,
+    .form-select.is-invalid:focus {
+      box-shadow: 0 0 0 .18rem rgba(173,0,41,.18);
+    }
+    .pill-opt input.is-invalid + label,
+    .cat-opt input.is-invalid + label {
+      border-color: var(--red);
+      box-shadow: 0 0 0 .12rem rgba(173,0,41,.15);
+    }
+    .upload-drop.is-invalid {
+      border-color: var(--red);
+      background: #fdf2f3;
+    }
+
     /* file upload */
     .upload-drop {
       border: 1.5px dashed #c4ccd8;

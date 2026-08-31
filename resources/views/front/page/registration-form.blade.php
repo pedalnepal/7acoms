@@ -71,6 +71,13 @@
       <form class="form-card" id="regForm" method="POST" action="{{ route('registration.store') }}" enctype="multipart/form-data" novalidate>
         @csrf
 
+        <!-- Shown by JS when the form is submitted with missing/invalid fields -->
+        <div class="alert alert-danger" id="regFormAlert" role="alert" hidden
+             style="border-left:4px solid var(--red);background:#fdecec;color:#842029;padding:1rem 1.25rem;border-radius:6px;margin-bottom:1.25rem;">
+          <strong><i class="fa-solid fa-triangle-exclamation me-1"></i>Please fill in all required fields.</strong>
+          <span id="regFormAlertDetail"></span>
+        </div>
+
         <!-- ============ 1. PERSONAL INFORMATION ============ -->
         <div class="form-section">
           <p class="form-section-title"><i class="fa-solid fa-user"></i> Personal Information</p>
@@ -399,7 +406,12 @@
       r.addEventListener('change', function () {
         var visible = r.checked && r.value === showValue;
         wrap.classList.toggle('show', visible);
-        requiredFields.forEach(function (field) { field.required = visible; });
+        requiredFields.forEach(function (field) {
+          field.required = visible;
+          // Clear the answer when the panel is hidden, so a value typed before
+          // the delegate changed their mind is never submitted.
+          if (!visible) field.value = '';
+        });
       });
     });
   }
@@ -409,16 +421,86 @@
 
   // ---- Submit handler: client-side validation, then submit to the server ----
   (function () {
-    var form = document.getElementById('regForm');
-    form.addEventListener('submit', function (e) {
-      if (!form.checkValidity()) {
-        e.preventDefault();
-        form.classList.add('was-validated');
-        var firstInvalid = form.querySelector(':invalid');
-        if (firstInvalid) firstInvalid.focus();
-        return;
+    var form   = document.getElementById('regForm');
+    var alertB = document.getElementById('regFormAlert');
+    var detail = document.getElementById('regFormAlertDetail');
+
+    // A readable label for a field, for the "missing: ..." summary.
+    function labelFor(field) {
+      // Radio/checkbox groups and file drop-zones wrap their control in a
+      // label full of helper text — use the section's .form-label instead.
+      var skipOwnLabel = field.type === 'radio' || field.type === 'checkbox' || field.type === 'file';
+      if (!skipOwnLabel && field.labels && field.labels.length) {
+        return field.labels[0].textContent.replace(/\*+/g, '').trim();
       }
-      // Valid — allow the native POST to the registration endpoint to proceed.
+      var group = field.closest('.col-md-6, .col-md-4, .col-md-8, .col-12, .col-6, .form-section');
+      var l = group && group.querySelector('.form-label');
+      return l ? l.textContent.replace(/\*+/g, '').trim() : (field.name || 'A required field');
+    }
+
+    // Drop the error state on a field as soon as the delegate corrects it.
+    form.addEventListener('input', clearFieldError, true);
+    form.addEventListener('change', clearFieldError, true);
+    function clearFieldError(e) {
+      var el = e.target;
+      if (el.checkValidity && el.checkValidity()) {
+        markTarget(el).classList.remove('is-invalid');
+        // for a radio, the mark sits on the first control in the group
+        if (el.type === 'radio') {
+          form.querySelectorAll('input[name="' + el.name + '"]').forEach(function (r) {
+            r.classList.remove('is-invalid');
+          });
+        }
+        // hide the banner once nothing is invalid any more
+        if (!form.querySelector('.is-invalid') && form.checkValidity()) {
+          alertB.hidden = true;
+        }
+      }
+    }
+
+    // Put the red mark somewhere visible: the drop zone for file inputs,
+    // the control itself otherwise.
+    function markTarget(el) {
+      return el.type === 'file' ? (el.closest('.upload-drop') || el) : el;
+    }
+
+    form.addEventListener('submit', function (e) {
+      // Clear previous marks
+      form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
+
+      if (form.checkValidity()) {
+        alertB.hidden = true;
+        return; // valid — let the native POST proceed
+      }
+
+      e.preventDefault();
+
+      var invalid = Array.prototype.filter.call(form.elements, function (el) {
+        return el.willValidate && !el.checkValidity();
+      });
+
+      // Mark each invalid control (for radio groups, mark the first in the group).
+      var seenRadioGroups = {};
+      var names = [];
+      invalid.forEach(function (el) {
+        if (el.type === 'radio') {
+          if (seenRadioGroups[el.name]) return;
+          seenRadioGroups[el.name] = true;
+        }
+        markTarget(el).classList.add('is-invalid');
+        var name = labelFor(el);
+        if (names.indexOf(name) === -1) names.push(name);
+      });
+
+      detail.textContent = names.length
+        ? ' Missing or invalid: ' + names.join(', ') + '.'
+        : '';
+
+      alertB.hidden = false;
+      alertB.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      var firstInvalid = invalid[0];
+      if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus({ preventScroll: true });
     });
   })();
 </script>

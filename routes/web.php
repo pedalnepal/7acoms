@@ -79,10 +79,14 @@ Route::group(['namespace'=>'App\Http\Controllers\Front'], function () {
     Route::get('about-naoms', 'FrontController@aboutNAOMS')->name('about.naoms');
     Route::get('registration-details', 'FrontController@registrationDetails')->name('registration.details');
     Route::get('abstract-submission', 'FrontController@abstractSubmit')->name('abstract.submission');
-    Route::post('abstract-submission', 'FrontController@abstractStore')->name('abstract.store');
+    Route::post('abstract-submission', 'FrontController@abstractStore')
+        ->middleware('throttle:6,1')
+        ->name('abstract.store');
     Route::get('organizing-committee', 'FrontController@organizingCommittee')->name('organizing.committee');
     Route::get('registration-form', 'FrontController@registrationForm')->name('registration.form');
-    Route::post('registration-form', 'FrontController@registrationStore')->name('registration.store');
+    Route::post('registration-form', 'FrontController@registrationStore')
+        ->middleware('throttle:6,1')
+        ->name('registration.store');
 
     // Registration payment (Cybersource Unified Checkout). The reference is an
     // unguessable UUID, so the delegate can return to their own payment without

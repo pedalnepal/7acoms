@@ -111,8 +111,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', 'registration@7acomstrainee.com'),
+        'name' => env('MAIL_FROM_NAME', '7th ACOMS'),
     ],
 
     /*
@@ -125,6 +125,6 @@ return [
     |
     */
 
-    'admin_address' => env('MAIL_ADMIN_ADDRESS', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
+    'admin_address' => env('MAIL_ADMIN_ADDRESS', env('MAIL_FROM_ADDRESS', 'registration@7acomstrainee.com')),
 
 ];

@@ -185,7 +185,18 @@ class FrontController extends Controller
         // Notify the scientific committee, and confirm to the author. A mail
         // failure must never break the submission — the data is already stored.
         try {
-            \Illuminate\Support\Facades\Mail::to(config('mail.admin_address'))
+            // Notify the scientific committee on both the primary and secondary
+            // addresses configured in site settings, falling back to the app's
+            // admin address if neither is set.
+            $committee = array_values(array_filter([
+                config('setting.pemail'),
+                config('setting.semail'),
+            ]));
+            if (empty($committee)) {
+                $committee = [config('mail.admin_address')];
+            }
+
+            \Illuminate\Support\Facades\Mail::to($committee)
                 ->send(new \App\Mail\AbstractSubmitted($abstract));
             if ($abstract->email) {
                 \Illuminate\Support\Facades\Mail::to($abstract->email)
@@ -238,6 +249,12 @@ class FrontController extends Controller
 
     public function registrationStore(Request $request)
     {
+        // Choice fields are whitelisted against the exact values the form
+        // offers, so a tampered POST can't slip an unpriced category past the
+        // fee calculator or a bogus room type past the accommodation table.
+        $categories = array_keys(config('registration.categories'));
+        $roomTypes  = array_keys(config('registration.accommodation'));
+
         $request->validate([
             'date'          => 'nullable|date',
             'fullName'      => 'required|string|max:255',
@@ -246,29 +263,38 @@ class FrontController extends Controller
             'designation'   => 'required|string|max:255',
             'workplace'     => 'required|string|max:255',
             'idCard'        => 'required|file|mimes:jpg,jpeg,png|max:4096',
-            'nationality'   => 'required|string|max:50',
-            'naomsMember'   => 'required|string|max:10',
+            'nationality'   => ['required', \Illuminate\Validation\Rule::in(['Nepali', 'SAARC', 'Non-SAARC'])],
+            'naomsMember'   => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
             'memberId'      => 'nullable|required_if:naomsMember,Yes|string|max:100',
-            'regFor'        => 'required|string|max:100',
-            'accommodation' => 'required|string|max:10',
-            'accRooms'      => 'nullable|required_if:accommodation,Yes|integer|min:1',
-            'accType'       => 'nullable|required_if:accommodation,Yes|string|max:50',
-            'accompanying'  => 'required|string|max:10',
-            'acpCount'      => 'nullable|required_if:accompanying,Yes|integer|min:1',
-            'category'      => 'required|string|max:255',
+            'regFor'        => ['required', \Illuminate\Validation\Rule::in(['Conference', 'Conference + Hands-on Course', 'Hands-on Course'])],
+            'accommodation' => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
+            'accRooms'      => 'nullable|required_if:accommodation,Yes|integer|min:1|max:20',
+            'accType'       => ['nullable', 'required_if:accommodation,Yes', \Illuminate\Validation\Rule::in($roomTypes)],
+            'accompanying'  => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
+            'acpCount'      => 'nullable|required_if:accompanying,Yes|integer|min:1|max:20',
+            'category'      => ['required', \Illuminate\Validation\Rule::in($categories)],
             'paymentReceipt'=> 'nullable|file|mimes:jpg,jpeg,png|max:4096',
-            'others'        => 'nullable|string',
+            'others'        => 'nullable|string|max:2000',
         ], [
             'idCard.mimes'         => 'The ID card must be a JPG or PNG image.',
             'idCard.max'           => 'The ID card image may not be larger than 4 MB.',
             'paymentReceipt.mimes' => 'The payment receipt must be a JPG or PNG image.',
             'paymentReceipt.max'   => 'The payment receipt may not be larger than 4 MB.',
             'category.required'    => 'Please choose the registration category that applies to you.',
+            'category.in'          => 'Please choose the registration category that applies to you.',
             'memberId.required_if' => 'Please enter your NAOMS membership ID.',
+            'accType.in'           => 'Please select a valid room type.',
             'accRooms.required_if' => 'Please specify how many rooms you need.',
             'accType.required_if'  => 'Please select a room type.',
             'acpCount.required_if' => 'Please specify how many accompanying people you are bringing.',
         ]);
+
+        // Drop any answers that belong to a conditional panel the delegate
+        // closed again — the browser leaves the old value in the hidden input,
+        // and only the controlling "Yes" answer should keep it.
+        $isMember      = $request->naomsMember === 'Yes';
+        $wantsRoom     = $request->accommodation === 'Yes';
+        $hasCompanions = $request->accompanying === 'Yes';
 
         $reg = new \App\Models\Registration;
         $reg->reg_date      = $request->date;
@@ -279,13 +305,13 @@ class FrontController extends Controller
         $reg->workplace     = $request->workplace;
         $reg->nationality   = $request->nationality;
         $reg->naoms_member  = $request->naomsMember;
-        $reg->member_id     = $request->memberId;
+        $reg->member_id     = $isMember ? $request->memberId : null;
         $reg->reg_for       = $request->regFor;
         $reg->accommodation = $request->accommodation;
-        $reg->acc_rooms     = $request->accRooms;
-        $reg->acc_type      = $request->accType;
+        $reg->acc_rooms     = $wantsRoom ? $request->accRooms : null;
+        $reg->acc_type      = $wantsRoom ? $request->accType : null;
         $reg->accompanying  = $request->accompanying;
-        $reg->acp_count     = $request->acpCount;
+        $reg->acp_count     = $hasCompanions ? $request->acpCount : null;
         $reg->category      = $request->category;
         $reg->others        = $request->others;
         $reg->status        = 'pending';
@@ -340,7 +366,18 @@ class FrontController extends Controller
     private function notifyRegistration(\App\Models\Registration $reg): void
     {
         try {
-            \Illuminate\Support\Facades\Mail::to(config('mail.admin_address'))
+            // Notify the organising committee on both the primary and secondary
+            // addresses configured in site settings, falling back to the app's
+            // admin address if neither is set.
+            $committee = array_values(array_filter([
+                config('setting.pemail'),
+                config('setting.semail'),
+            ]));
+            if (empty($committee)) {
+                $committee = [config('mail.admin_address')];
+            }
+
+            \Illuminate\Support\Facades\Mail::to($committee)
                 ->send(new \App\Mail\RegistrationSubmitted($reg));
             if ($reg->email) {
                 \Illuminate\Support\Facades\Mail::to($reg->email)

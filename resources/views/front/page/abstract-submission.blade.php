@@ -66,6 +66,13 @@
       <form class="form-card" id="abstractForm" method="POST" action="{{ route('abstract.store') }}" enctype="multipart/form-data" novalidate>
         @csrf
 
+        <!-- Shown by JS when the form is submitted with missing/invalid fields -->
+        <div class="alert alert-danger" id="abstractFormAlert" role="alert" hidden
+             style="border-left:4px solid var(--red);background:#fdecec;color:#842029;padding:1rem 1.25rem;border-radius:6px;margin-bottom:1.25rem;">
+          <strong><i class="fa-solid fa-triangle-exclamation me-1"></i>Please fill in all required fields.</strong>
+          <span id="abstractFormAlertDetail"></span>
+        </div>
+
         <!-- Author details -->
         <div class="form-section">
           <p class="form-section-title"><i class="fa-solid fa-user-pen"></i> Author &amp; Affiliation</p>
@@ -279,6 +286,83 @@
         chosen.classList.remove('show');
       });
     }
+  })();
+
+  // ---- Submit handler: show a summary message for empty/invalid fields ----
+  (function () {
+    var form   = document.getElementById('abstractForm');
+    var alertB = document.getElementById('abstractFormAlert');
+    var detail = document.getElementById('abstractFormAlertDetail');
+    if (!form || !alertB) return;
+
+    // A readable label for a field, for the "missing: ..." summary.
+    function labelFor(field) {
+      var skipOwnLabel = field.type === 'radio' || field.type === 'checkbox' || field.type === 'file';
+      if (!skipOwnLabel && field.labels && field.labels.length) {
+        return field.labels[0].textContent.replace(/\*+/g, '').trim();
+      }
+      var group = field.closest('.col-md-6, .col-md-4, .col-md-8, .col-12, .col-6, .form-section');
+      var l = group && group.querySelector('.form-label');
+      return l ? l.textContent.replace(/\*+/g, '').trim() : (field.name || 'A required field');
+    }
+
+    // Put the red mark on the drop zone for file inputs, the control otherwise.
+    function markTarget(el) {
+      return el.type === 'file' ? (el.closest('.upload-drop') || el) : el;
+    }
+
+    // Drop the error state on a field as soon as the author corrects it.
+    form.addEventListener('input', clearFieldError, true);
+    form.addEventListener('change', clearFieldError, true);
+    function clearFieldError(e) {
+      var el = e.target;
+      if (el.checkValidity && el.checkValidity()) {
+        markTarget(el).classList.remove('is-invalid');
+        if (el.type === 'radio') {
+          form.querySelectorAll('input[name="' + el.name + '"]').forEach(function (r) {
+            r.classList.remove('is-invalid');
+          });
+        }
+        if (!form.querySelector('.is-invalid') && form.checkValidity()) {
+          alertB.hidden = true;
+        }
+      }
+    }
+
+    form.addEventListener('submit', function (e) {
+      form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
+
+      if (form.checkValidity()) {
+        alertB.hidden = true;
+        return; // valid — let the native POST proceed
+      }
+
+      e.preventDefault();
+
+      var invalid = Array.prototype.filter.call(form.elements, function (el) {
+        return el.willValidate && !el.checkValidity();
+      });
+
+      var seenRadioGroups = {};
+      var names = [];
+      invalid.forEach(function (el) {
+        if (el.type === 'radio') {
+          if (seenRadioGroups[el.name]) return;
+          seenRadioGroups[el.name] = true;
+        }
+        markTarget(el).classList.add('is-invalid');
+        var name = labelFor(el);
+        if (names.indexOf(name) === -1) names.push(name);
+      });
+
+      detail.textContent = names.length ? ' Missing or invalid: ' + names.join(', ') + '.' : '';
+
+      alertB.hidden = false;
+      alertB.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      var firstInvalid = invalid[0];
+      if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus({ preventScroll: true });
+    });
   })();
 </script>
 @endpush
