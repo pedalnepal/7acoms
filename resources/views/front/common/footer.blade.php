@@ -11,24 +11,58 @@
       <div class="col-lg-4 col-md-6">
         <h6>Find us</h6>
         <p class="footer-org">Nepalese Association of Oral and<br>Maxillofacial Surgeons</p>
-        <a href="#" class="footer-contact-item">
+        @if(config('setting.location'))
+        <div class="footer-contact-item">
           <i class="fa-solid fa-location-dot"></i>
-          <span>Radisson Hotel, Kathmandu, Nepal</span>
-        </a>
-        <a href="tel:+977970000000" class="footer-contact-item">
+          <span>{{ config('setting.location') }}</span>
+        </div>
+        @endif
+        @if(config('setting.contact'))
+        <a href="tel:{{ config('setting.contact') }}" class="footer-contact-item">
           <i class="fa-solid fa-phone"></i>
-          <span>+977 - 970000000</span>
+          <span>{{ config('setting.contact') }}</span>
         </a>
-        <a href="mailto:info@naoms.org.np" class="footer-contact-item">
+        @endif
+        @if(config('setting.mobile'))
+        <a href="tel:{{ config('setting.mobile') }}" class="footer-contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>{{ config('setting.mobile') }}</span>
+        </a>
+        @endif
+        @if(config('setting.sphone'))
+        <a href="tel:{{ config('setting.sphone') }}" class="footer-contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>{{ config('setting.sphone') }}</span>
+        </a>
+        @endif
+        @if(config('setting.pemail'))
+        <a href="mailto:{{ config('setting.pemail') }}" class="footer-contact-item">
           <i class="fa-solid fa-envelope"></i>
-          <span>info@naoms.org.np</span>
+          <span>{{ config('setting.pemail') }}</span>
         </a>
+        @endif
+        @if(config('setting.semail'))
+        <a href="mailto:{{ config('setting.semail') }}" class="footer-contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>{{ config('setting.semail') }}</span>
+        </a>
+        @endif
         <div class="footer-social">
-          <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" title="X / Twitter"><i class="fab fa-x-twitter"></i></a>
-          <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
-          <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          @if(config('setting.facebook'))
+          <a href="{{ config('setting.facebook') }}" target="_blank" rel="noopener noreferrer" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+          @endif
+          @if(config('setting.instagram'))
+          <a href="{{ config('setting.instagram') }}" target="_blank" rel="noopener noreferrer" title="Instagram"><i class="fab fa-instagram"></i></a>
+          @endif
+          @if(config('setting.tiktok'))
+          <a href="{{ config('setting.tiktok') }}" target="_blank" rel="noopener noreferrer" title="TikTok"><i class="fab fa-tiktok"></i></a>
+          @endif
+          @if(config('setting.youtube'))
+          <a href="{{ config('setting.youtube') }}" target="_blank" rel="noopener noreferrer" title="YouTube"><i class="fab fa-youtube"></i></a>
+          @endif
+          @if(config('setting.linkedin'))
+          <a href="{{ config('setting.linkedin') }}" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          @endif
         </div>
       </div>
 
@@ -36,10 +70,7 @@
       <div class="col-lg-4 col-md-6">
         <h6>Quick links</h6>
         <ul class="footer-links">
-          <li><a href="#">About</a></li>
-          <li><a href="#">Scientific program</a></li>
-          <li><a href="#">Venue Details</a></li>
-          <li><a href="https://7acomstrainee.com/registration-details.html">Registration</a></li>
+          {!!\App\Models\Menu::getMenu(2)!!}
         </ul>
       </div>
 
@@ -47,9 +78,7 @@
       <div class="col-lg-4 col-md-6">
         <h6>Be a Part Of NAOMS</h6>
         <ul class="footer-links">
-          <li><a href="#">Membership</a></li>
-          <li><a href="#">Contact us</a></li>
-          <li><a href="#">Team</a></li>
+          {!!\App\Models\Menu::getMenu(3)!!}
         </ul>
       </div>
 
@@ -57,7 +86,7 @@
   </div>
 
   <div class="footer-bottom">
-    Copyright &copy; 2026 NAOMS. All rights reserved. Powered by
-    <a href="#"><img src="{{ asset('images/pedal-logo-light.svg') }}"></a>
+    Copyright &copy; {{ date('Y') }} NAOMS. All rights reserved. Powered by
+    <a href="https://www.pedaladvertising.com/" target="_blank" rel="noopener noreferrer"><img src="{{ asset('images/pedal-logo-light.svg') }}" alt="Pedal Advertising"></a>
   </div>
 </footer>
