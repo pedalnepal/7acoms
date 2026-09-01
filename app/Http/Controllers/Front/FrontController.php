@@ -98,11 +98,14 @@ class FrontController extends Controller
         return view('front.page.contact', $data);
     }
 
-    public function registrationDetails()
+    public function registrationDetails(\App\Services\RegistrationFeeCalculator $fees)
     {
         $page = \App\Models\Page::whereIn('permalink', ['registration-details'])
                     ->orWhere('id', 4)
                     ->firstOrFail();
+
+        $currentTier = $fees->tierFor(\Carbon\CarbonImmutable::now());
+        $tierKeys    = array_keys(config('registration.tiers'));
 
         $data = [
             'page'             => $page,
@@ -111,9 +114,52 @@ class FrontController extends Controller
             'meta_keyword'     => $page->meta_keyword ?? '',
             'meta_robot'       => $page->meta_robot ?? '',
             'image'            => $page->media ? $page->media->get_attachment_url() : '',
+            // The same fee table and tier logic the registration form and the
+            // payment page use, so this page can never quote a different price
+            // or a different "currently applicable" tier than they do.
+            'categoryFees'     => config('registration.categories'),
+            'tierRows'         => $this->tierRows($tierKeys, $currentTier),
+            'currentTier'      => $currentTier,
         ];
 
         return view('front.page.registration-details', $data);
+    }
+
+    /**
+     * The deadline-strip cards: each tier's label and a human date range,
+     * plus which one is in effect today.
+     *
+     * @param  array<int, string>  $tierKeys  Tier keys in config order (early, regular, late, ...).
+     * @return array<string, array{label: string, dateLabel: string, active: bool}>
+     */
+    private function tierRows(array $tierKeys, string $currentTier): array
+    {
+        $tiers = config('registration.tiers');
+        $rows  = [];
+
+        foreach ($tierKeys as $i => $key) {
+            $tier  = $tiers[$key];
+            $until = $tier['until'] ?? null;
+
+            if ($until) {
+                $dateLabel = 'Up to ' . \Carbon\CarbonImmutable::parse($until)->format('j F Y');
+            } else {
+                // The last tier has no cut-off of its own; it starts the day
+                // after the previous tier's.
+                $previousUntil = $i > 0 ? ($tiers[$tierKeys[$i - 1]]['until'] ?? null) : null;
+                $dateLabel = $previousUntil
+                    ? 'After ' . \Carbon\CarbonImmutable::parse($previousUntil)->format('j F Y')
+                    : 'Any time';
+            }
+
+            $rows[$key] = [
+                'label'     => $tier['label'],
+                'dateLabel' => $dateLabel,
+                'active'    => $key === $currentTier,
+            ];
+        }
+
+        return $rows;
     }
     public function abstractSubmit()
     {
@@ -229,7 +275,7 @@ class FrontController extends Controller
     }
 
 
-    public function registrationForm()
+    public function registrationForm(\App\Services\RegistrationFeeCalculator $fees)
     {
         $page = \App\Models\Page::whereIn('permalink', ['registration-form'])
                     ->orWhere('id', 7)
@@ -242,6 +288,10 @@ class FrontController extends Controller
             'meta_keyword'     => $page->meta_keyword ?? '',
             'meta_robot'       => $page->meta_robot ?? '',
             'image'            => $page->media ? $page->media->get_attachment_url() : '',
+            // The current tier's fee per category, straight from
+            // config/registration.php, so this moves with the config and the
+            // calendar instead of being typed in once and going stale.
+            'categoryFees'     => $fees->currentCategoryFees(),
         ];
 
         return view('front.page.registration-form', $data);

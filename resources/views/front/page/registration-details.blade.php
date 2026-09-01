@@ -37,24 +37,17 @@
 
       <!-- Deadline strip -->
       <div class="row g-3 deadline-row mt-2">
-        <div class="col-lg-3 col-sm-6">
-          <div class="deadline-card is-active">
-            <div class="dl-label">Early Bird Registration</div>
-            <p class="dl-date">Up to 15 November 2026</p>
+        @foreach($tierRows as $tier)
+          <div class="col-lg-3 col-sm-6">
+            <div class="deadline-card {{ $tier['active'] ? 'is-active' : '' }}">
+              <div class="dl-label">{{ $tier['label'] }}</div>
+              <p class="dl-date">{{ $tier['dateLabel'] }}</p>
+            </div>
           </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-          <div class="deadline-card">
-            <div class="dl-label">Registration</div>
-            <p class="dl-date">Up to 15 January 2027</p>
-          </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-          <div class="deadline-card">
-            <div class="dl-label">Late Registration</div>
-            <p class="dl-date">After 15 January 2027</p>
-          </div>
-        </div>
+        @endforeach
+        {{-- Spot Registration is a walk-in fee decided at the venue, not a
+             dated tier in config/registration.php, so it has no "active"
+             state of its own and stays fixed here. --}}
         <div class="col-lg-3 col-sm-6">
           <div class="deadline-card">
             <div class="dl-label">Spot Registration</div>
@@ -69,62 +62,39 @@
           <thead>
             <tr>
               <th scope="col" class="col-cat">Category</th>
-              <th scope="col">Early Bird Registration<span class="th-sub">Up to 15 Nov 2026</span></th>
-              <th scope="col">Registration<span class="th-sub">Up to 15 Jan 2027</span></th>
-              <th scope="col">Late Registration<span class="th-sub">After 15 Jan 2027</span></th>
+              @foreach($tierRows as $tier)
+                <th scope="col">{{ $tier['label'] }}<span class="th-sub">{{ $tier['dateLabel'] }}</span></th>
+              @endforeach
               <th scope="col">Spot Registration<span class="th-sub">At the venue</span></th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">NAOMS Member</th>
-              <td class="is-early"><span class="cur">NPR</span>18,000</td>
-              <td><span class="cur">NPR</span>20,000</td>
-              <td><span class="cur">NPR</span>22,000</td>
-              <td><span class="cur">NPR</span>24,000</td>
-            </tr>
-            <tr>
-              <th scope="row">Non-NAOMS Member (Nepalese)</th>
-              <td class="is-early"><span class="cur">NPR</span>20,000</td>
-              <td><span class="cur">NPR</span>22,000</td>
-              <td><span class="cur">NPR</span>24,000</td>
-              <td><span class="cur">NPR</span>26,000</td>
-            </tr>
-            <tr>
-              <th scope="row">International Delegate</th>
-              <td class="is-early"><span class="cur">USD</span>200</td>
-              <td><span class="cur">USD</span>240</td>
-              <td><span class="cur">USD</span>260</td>
-              <td><span class="cur">USD</span>280</td>
-            </tr>
-            <tr>
-              <th scope="row">Residents and Dental Surgeons (Nepalese)</th>
-              <td class="is-early"><span class="cur">NPR</span>15,000</td>
-              <td><span class="cur">NPR</span>17,000</td>
-              <td><span class="cur">NPR</span>19,000</td>
-              <td><span class="cur">NPR</span>20,000</td>
-            </tr>
-            <tr>
-              <th scope="row">Residents and Dental Surgeons (International)</th>
-              <td class="is-early"><span class="cur">USD</span>150</td>
-              <td><span class="cur">USD</span>170</td>
-              <td><span class="cur">USD</span>190</td>
-              <td><span class="cur">USD</span>200</td>
-            </tr>
-            <tr>
-              <th scope="row">Accompanying Person</th>
-              <td class="is-early"><span class="cur">NPR</span>15,000</td>
-              <td><span class="cur">NPR</span>15,000</td>
-              <td><span class="cur">NPR</span>15,000</td>
-              <td><span class="cur">NPR</span>16,000</td>
-            </tr>
-            <tr>
-              <th scope="row">Accompanying Person (International)</th>
-              <td class="is-early"><span class="cur">USD</span>100</td>
-              <td><span class="cur">USD</span>100</td>
-              <td><span class="cur">USD</span>100</td>
-              <td><span class="cur">USD</span>120</td>
-            </tr>
+            @php
+              // Spot Registration is a walk-in fee, not part of the config
+              // fee table (see the note on the deadline card above) — kept
+              // here as the only figures on this page not sourced from
+              // config/registration.php.
+              $spotFees = [
+                  'NAOMS Member'                                      => 24000,
+                  'Non-NAOMS Member (Nepalese)'                       => 26000,
+                  'International Delegate'                            => 280,
+                  'Residents and Dental Surgeons (Nepalese)'          => 20000,
+                  'Residents and Dental Surgeons (International)'    => 200,
+                  'Accompanying Person'                               => 16000,
+                  'Accompanying Person (International)'               => 120,
+              ];
+            @endphp
+            @foreach($categoryFees as $name => $category)
+              <tr>
+                <th scope="row">{{ $name }}</th>
+                @foreach($tierRows as $key => $tier)
+                  <td class="{{ $tier['active'] ? 'is-early' : '' }}">
+                    <span class="cur">{{ $category['currency'] }}</span>{{ number_format($category['fees'][$key]) }}
+                  </td>
+                @endforeach
+                <td><span class="cur">{{ $category['currency'] }}</span>{{ number_format($spotFees[$name]) }}</td>
+              </tr>
+            @endforeach
           </tbody>
         </table>
       </div>

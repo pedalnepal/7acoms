@@ -57,6 +57,34 @@ class RegistrationFeeCalculator
     }
 
     /**
+     * The base fee for every category at the tier applicable today — what the
+     * registration form should display next to each category, so the price
+     * shown moves as a tier deadline passes or the config is edited, instead
+     * of being typed in once and going stale.
+     *
+     * This is deliberately just the category's own fee, not a full quote: the
+     * form doesn't yet know accompanying-person counts or add-ons, so it can
+     * only show what a category costs on its own, same as it always has.
+     *
+     * @return array<string, array{currency: string, amount: float}>
+     */
+    public function currentCategoryFees(?CarbonImmutable $on = null): array
+    {
+        $tier = $this->tierFor($on ?: CarbonImmutable::now());
+
+        $fees = [];
+
+        foreach (config('registration.categories') as $name => $category) {
+            $fees[$name] = [
+                'currency' => $category['currency'],
+                'amount'   => (float) $category['fees'][$tier],
+            ];
+        }
+
+        return $fees;
+    }
+
+    /**
      * The tier whose cut-off date has not yet passed. The last tier configured
      * has no cut-off and catches everything later.
      */

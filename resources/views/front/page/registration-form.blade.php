@@ -268,35 +268,40 @@
         <div class="form-section">
           <p class="form-section-title"><i class="fa-solid fa-money-check-dollar"></i> Registration Category &amp; Payment</p>
 
+          @php
+            // Pulled from config/registration.php at the tier applicable
+            // today — see RegistrationFeeCalculator::currentCategoryFees().
+            $catFee = fn (string $name) => $categoryFees[$name]['currency'] . ' ' . number_format($categoryFees[$name]['amount']);
+          @endphp
           <label class="form-label d-block">Registration Category <span class="req">*</span></label>
           <div class="cat-group">
             <div class="cat-opt">
               <input type="radio" id="cat-1" name="category" value="NAOMS Member" required>
-              <label for="cat-1">NAOMS Member <span class="cat-fee">NPR 18,000</span></label>
+              <label for="cat-1">NAOMS Member <span class="cat-fee">{{ $catFee('NAOMS Member') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-2" name="category" value="Non-NAOMS Member (Nepalese)">
-              <label for="cat-2">Non-NAOMS Member (Nepalese) <span class="cat-fee">NPR 20,000</span></label>
+              <label for="cat-2">Non-NAOMS Member (Nepalese) <span class="cat-fee">{{ $catFee('Non-NAOMS Member (Nepalese)') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-3" name="category" value="International Delegate">
-              <label for="cat-3">International Delegate <span class="cat-fee">USD 200</span></label>
+              <label for="cat-3">International Delegate <span class="cat-fee">{{ $catFee('International Delegate') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-4" name="category" value="Residents and Dental Surgeons (Nepalese)">
-              <label for="cat-4">Residents and Dental Surgeons (Nepalese) <span class="cat-fee">NPR 15,000</span></label>
+              <label for="cat-4">Residents and Dental Surgeons (Nepalese) <span class="cat-fee">{{ $catFee('Residents and Dental Surgeons (Nepalese)') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-5" name="category" value="Residents and Dental Surgeons (International)">
-              <label for="cat-5">Residents and Dental Surgeons (International) <span class="cat-fee">USD 150</span></label>
+              <label for="cat-5">Residents and Dental Surgeons (International) <span class="cat-fee">{{ $catFee('Residents and Dental Surgeons (International)') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-6" name="category" value="Accompanying Person">
-              <label for="cat-6">Accompanying Person <span class="cat-fee">NPR 15,000</span></label>
+              <label for="cat-6">Accompanying Person <span class="cat-fee">{{ $catFee('Accompanying Person') }}</span></label>
             </div>
             <div class="cat-opt">
               <input type="radio" id="cat-7" name="category" value="Accompanying Person (International)">
-              <label for="cat-7">Accompanying Person (International) <span class="cat-fee">USD 100</span></label>
+              <label for="cat-7">Accompanying Person (International) <span class="cat-fee">{{ $catFee('Accompanying Person (International)') }}</span></label>
             </div>
           </div>
           <p class="field-hint"><i class="fa-solid fa-circle-info me-1"></i>Fees rise at each deadline. See the full fee table on the <a href="{{url('registration-details')}}" style="color:var(--red);">registration details</a> page.</p>
