@@ -7,16 +7,24 @@ use Illuminate\Support\Facades\Log;
 /**
  * The Unified Checkout integration.
  *
- * Three server-side steps make up the flow:
+ * Every payment starts the same way:
  *
  *  1. createCaptureContext() calls the Sessions API and returns the signed JWT
  *     that configures the browser SDK, along with the SDK script URL and its
  *     subresource-integrity hash pulled out of that JWT.
  *  2. The browser collects the payment details and hands back a transient
  *     token — a short-lived (15 minute) reference, never the card data.
- *  3. authorize() charges that transient token through the Payments API, using
- *     the amount this application calculated rather than anything the browser
- *     supplied.
+ *
+ * How the transaction is then run depends on the complete mandate:
+ *
+ *  - With it (the default), the capture context asks the gateway to run 3-D
+ *    Secure and the sale itself. The SDK's complete() resolves with a signed
+ *    result, which readTransactionResult() verifies and reads.
+ *  - Without it, authorize() charges the transient token through the Payments
+ *    API — no payer authentication, but the amount is stated server-side.
+ *
+ * Either way the amount comes from this application: under the mandate it is
+ * the one baked into the capture context, which the browser cannot alter.
  */
 class UnifiedCheckoutService
 {
@@ -27,8 +35,10 @@ class UnifiedCheckoutService
      */
     public const ACCEPTED_STATUSES = ['AUTHORIZED', 'PENDING', 'AUTHORIZED_PENDING_REVIEW'];
 
-    public function __construct(private CybersourceClient $client)
-    {
+    public function __construct(
+        private CybersourceClient $client,
+        private JwtVerifier $verifier
+    ) {
     }
 
     public function isConfigured(): bool
@@ -37,10 +47,22 @@ class UnifiedCheckoutService
     }
 
     /**
+     * Whether the gateway, rather than this application, runs the transaction.
+     *
+     * The mandate only runs when a type is configured, so that single setting
+     * decides which of the two flows the checkout page and the process()
+     * endpoint follow.
+     */
+    public function usesCompleteMandate(): bool
+    {
+        return (bool) config('cybersource.complete_mandate_type');
+    }
+
+    /**
      * Create a capture context for one payment attempt.
      *
      * @param  array{reference: string, amount: string|float, currency: string, bill_to?: array<string, string|null>}  $order
-     * @return array{jwt: string, client_library: string, client_library_integrity: ?string}
+     * @return array{jwt: string, client_library: string, client_library_integrity: ?string, complete_mandate: bool}
      *
      * @throws CybersourceException
      */
@@ -76,6 +98,8 @@ class UnifiedCheckoutService
             'jwt'                      => $jwt,
             'client_library'           => $clientLibrary,
             'client_library_integrity' => $this->findClaim($claims, 'clientLibraryIntegrity'),
+            // The page has to know which flow it is driving before it mounts.
+            'complete_mandate'         => $this->usesCompleteMandate(),
         ];
     }
 
@@ -143,6 +167,77 @@ class UnifiedCheckoutService
             'approved'       => $approved,
             'raw'            => $body + ['http_status' => $response->status()],
         ];
+    }
+
+    /**
+     * Read the outcome of a transaction the complete mandate ran.
+     *
+     * The result decides whether a registration counts as paid, so its
+     * signature is checked before a single claim is read. Where the payment
+     * response sits inside the token depends on which services the mandate
+     * ran, so the claims are searched rather than walked down a fixed path —
+     * the same reason findClaim() exists for the capture context.
+     *
+     * @return array{status: string, transaction_id: ?string, reason: ?string, message: ?string, approved: bool, authenticated: bool, reference: ?string, raw: array<string, mixed>}
+     *
+     * @throws CybersourceException
+     */
+    public function readTransactionResult(string $jwt): array
+    {
+        $claims  = $this->verifier->verify($jwt);
+        $payment = $this->findNodeWith($claims, 'status') ?? [];
+
+        $status   = (string) ($payment['status'] ?? 'UNKNOWN');
+        $approved = in_array($status, self::ACCEPTED_STATUSES, true);
+
+        if (! $approved) {
+            Log::warning('Unified Checkout complete mandate not approved', [
+                'status' => $status,
+                'reason' => $payment['reason'] ?? null,
+                'claims' => array_keys($claims),
+            ]);
+        }
+
+        return [
+            'status'         => $status,
+            'transaction_id' => $this->stringOrNull($payment['id'] ?? null)
+                ?? $this->findClaim($claims, 'transactionId'),
+            'reason'         => $this->stringOrNull($payment['reason'] ?? null),
+            'message'        => $this->stringOrNull($payment['message'] ?? null)
+                ?? $this->stringOrNull($payment['errorInformation']['message'] ?? null),
+            'approved'       => $approved,
+            'authenticated'  => $this->wasAuthenticated($claims),
+            // Named explicitly rather than searched for: 'code' is a common
+            // key, and matching the wrong one would reject a real payment.
+            'reference'      => $this->stringOrNull(
+                $this->findArrayClaim($claims, 'clientReferenceInformation')['code'] ?? null
+            ),
+            'raw'            => $claims,
+        ];
+    }
+
+    /**
+     * Whether payer authentication actually happened.
+     *
+     * A CAVV is the issuer's proof that the cardholder was authenticated; a
+     * transaction status of Y (authenticated) or A (attempted, liability still
+     * shifts) says the same thing where no CAVV is surfaced. Anything else —
+     * including a mandate configured for NONE — counts as unauthenticated.
+     *
+     * @param  array<string, mixed>  $claims
+     */
+    private function wasAuthenticated(array $claims): bool
+    {
+        $authentication = $this->findArrayClaim($claims, 'consumerAuthenticationInformation')
+            ?? $this->findNodeWith($claims, 'transactionStatus')
+            ?? [];
+
+        return ! empty($authentication['cavv'])
+            || in_array(
+                strtoupper((string) ($authentication['transactionStatus'] ?? '')),
+                ['Y', 'A'],
+                true
+            );
     }
 
     /**
@@ -228,14 +323,14 @@ class UnifiedCheckoutService
             $payload['clientVersion'] = $version;
         }
 
-        // Only sent when configured, so the gateway's defaults stand otherwise.
-        $completeMandate = array_filter([
-            'type'                   => config('cybersource.complete_mandate_type'),
-            'consumerAuthentication' => config('cybersource.consumer_authentication'),
-        ]);
-
-        if ($completeMandate) {
-            $payload['completeMandate'] = $completeMandate;
+        // Present only when a mandate type is configured; without it the
+        // gateway returns a transient token and nothing else, and this
+        // application authorises the payment itself.
+        if ($this->usesCompleteMandate()) {
+            $payload['completeMandate'] = array_filter([
+                'type'                   => config('cybersource.complete_mandate_type'),
+                'consumerAuthentication' => config('cybersource.consumer_authentication'),
+            ]);
         }
 
         // Prefilling what we already know saves the delegate re-typing it.
@@ -377,6 +472,57 @@ class UnifiedCheckoutService
         }
 
         return null;
+    }
+
+    /**
+     * The innermost object that carries $key as a string value.
+     *
+     * Returning the whole node rather than the value keeps its siblings
+     * available, so a status can be read together with the id and reason that
+     * belong to the same response and not to some unrelated nested object.
+     *
+     * @param  array<string, mixed>  $claims
+     * @return array<string, mixed>|null
+     */
+    private function findNodeWith(array $claims, string $key): ?array
+    {
+        if (isset($claims[$key]) && is_string($claims[$key])) {
+            return $claims;
+        }
+
+        foreach ($claims as $value) {
+            if (is_array($value) && ($found = $this->findNodeWith($value, $key)) !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find a nested object by name anywhere in the claims.
+     *
+     * @param  array<string, mixed>  $claims
+     * @return array<string, mixed>|null
+     */
+    private function findArrayClaim(array $claims, string $key): ?array
+    {
+        if (isset($claims[$key]) && is_array($claims[$key])) {
+            return $claims[$key];
+        }
+
+        foreach ($claims as $value) {
+            if (is_array($value) && ($found = $this->findArrayClaim($value, $key)) !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    private function stringOrNull(mixed $value): ?string
+    {
+        return is_string($value) || is_int($value) ? (string) $value : null;
     }
 
     /**

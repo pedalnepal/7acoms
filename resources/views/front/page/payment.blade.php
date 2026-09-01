@@ -166,12 +166,19 @@
         crossorigin="anonymous"></script>
 <script>
 (function () {
-  var captureContext = @json($session['jwt']);
-  var processUrl     = @json(route('registration.payment.process', $registration->payment_reference));
-  var csrfToken      = @json(csrf_token());
+  var captureContext  = @json($session['jwt']);
+  var processUrl      = @json(route('registration.payment.process', $registration->payment_reference));
+  var csrfToken       = @json(csrf_token());
+  // When the capture context carries a complete mandate, the gateway runs
+  // 3-D Secure and the sale; otherwise the server charges the token itself.
+  var completeMandate = @json($session['complete_mandate']);
 
   var loadingEl = document.getElementById('payment-loading');
   var alertEl   = document.getElementById('payment-alert');
+
+  var paidButUnconfirmed = 'Your payment went through but we could not record it. '
+    + 'Please do not pay again — contact the organising committee quoting reference '
+    + @json($registration->paymentCode()) + '.';
 
   function showError(message) {
     alertEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>' + message;
@@ -183,9 +190,9 @@
     alertEl.hidden = true;
   }
 
-  // Hand the transient token to the server, which authorises the payment for
-  // the amount it calculated — the browser never states the amount.
-  function authorize(transientToken) {
+  // Report the attempt to the server, which settles it against the amount it
+  // calculated — the browser never states the amount.
+  function settle(payload) {
     return fetch(processUrl, {
       method: 'POST',
       headers: {
@@ -195,7 +202,7 @@
         'X-Requested-With': 'XMLHttpRequest'
       },
       credentials: 'same-origin',
-      body: JSON.stringify({ transient_token: transientToken })
+      body: JSON.stringify(payload)
     }).then(function (response) {
       return response.json().catch(function () {
         return { success: false, message: 'The server returned an unexpected response.' };
@@ -206,6 +213,9 @@
   async function launchCheckout() {
     var client;
     var checkout;
+    // Set once the gateway has actually run the transaction, so a failure
+    // after that point never tells the delegate to try again.
+    var transactionRan = false;
 
     try {
       client = await VAS.UnifiedCheckout(captureContext);
@@ -215,8 +225,9 @@
         console.error('UnifiedCheckout', err.source, err.code, err.message);
       });
 
-      // autoProcessing false: mount() resolves with a transient token, and this
-      // application authorises the payment server-side.
+      // autoProcessing false in both flows: mount() resolves with the transient
+      // token, leaving this page to decide when the transaction runs rather
+      // than having the mandate fire the moment the form is submitted.
       checkout = await client.createCheckout({ autoProcessing: false });
 
       checkout.on('ready', function () {
@@ -231,22 +242,39 @@
 
       clearError();
 
-      var result = await authorize(transientToken);
+      var payload = { transient_token: transientToken };
+
+      if (completeMandate) {
+        // Runs payer authentication — which may put a bank challenge on screen
+        // — and then the sale, for the amount held in the capture context.
+        // The signed result is what the server verifies.
+        payload.payment_result = await checkout.complete(transientToken);
+        transactionRan = true;
+      }
+
+      var result = await settle(payload);
 
       if (result.success && result.redirect) {
         window.location.href = result.redirect;
         return;
       }
 
-      showError(result.message || 'The payment could not be completed. Please try again.');
+      showError(result.message || (transactionRan
+        ? paidButUnconfirmed
+        : 'The payment could not be completed. Please try again.'));
     } catch (error) {
       if (loadingEl) loadingEl.remove();
 
-      if (error && error.name === 'UnifiedCheckoutError') {
+      console.error(error);
+
+      if (transactionRan) {
+        // The card has been charged; only recording it failed. Inviting a
+        // retry here would take the fee a second time.
+        showError(paidButUnconfirmed);
+      } else if (error && error.name === 'UnifiedCheckoutError') {
         console.error('UnifiedCheckout', error.reason, error.message, error.details);
         showError(messageFor(error.reason));
       } else {
-        console.error(error);
         showError('Something went wrong while loading the payment form. Please refresh the page and try again.');
       }
     } finally {

@@ -108,6 +108,16 @@ class ForexConversionTest extends TestCase
         return rtrim(strtr(base64_encode(json_encode($data)), '+/', '-_'), '=');
     }
 
+    /**
+     * Switch off the complete mandate, so the transaction runs through the
+     * Payments API where its amount can be read off the request. What is being
+     * tested is the converted amount, not which of the two flows carries it.
+     */
+    private function withoutCompleteMandate(): void
+    {
+        config(['cybersource.complete_mandate_type' => null]);
+    }
+
     private function registration(array $overrides = []): Registration
     {
         return Registration::create(array_merge([
@@ -223,6 +233,8 @@ class ForexConversionTest extends TestCase
 
     public function test_the_amount_charged_is_the_one_fixed_when_the_page_was_built(): void
     {
+        $this->withoutCompleteMandate();
+
         Http::fake(['*/pts/v2/payments' => Http::response(['id' => '123', 'status' => 'AUTHORIZED'], 201)]);
 
         $registration = $this->registration([
@@ -257,6 +269,8 @@ class ForexConversionTest extends TestCase
 
     public function test_the_transaction_records_both_the_fee_and_the_charge(): void
     {
+        $this->withoutCompleteMandate();
+
         Http::fake(['*/pts/v2/payments' => Http::response(['id' => '123', 'status' => 'AUTHORIZED'], 201)]);
 
         $registration = $this->registration([

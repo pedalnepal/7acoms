@@ -54,6 +54,32 @@ class CybersourceClient
     }
 
     /**
+     * A GET that carries no merchant signature.
+     *
+     * The public-key endpoint serves keys anyone may fetch, and signing the
+     * request is not merely unnecessary — the endpoint is not scoped to a
+     * merchant, so an unexpected signature header only invites a rejection.
+     *
+     * @throws CybersourceException
+     */
+    public function getUnsigned(string $path): Response
+    {
+        $url = 'https://' . $this->host() . $path;
+
+        try {
+            return Http::withHeaders(['Accept' => 'application/json'])
+                ->timeout((int) ($this->config['timeout'] ?? 30))
+                ->get($url);
+        } catch (\Throwable $e) {
+            throw new CybersourceException(
+                'Could not reach the payment gateway: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
      * @throws CybersourceException
      */
     private function send(string $method, string $path, ?string $body = null): Response

@@ -21,8 +21,13 @@ use Illuminate\Support\Facades\Mail;
  * Checkout.
  *
  * The browser never states what it owes: this controller prices the
- * registration itself, builds the capture context from that price, and charges
- * the returned transient token for the same amount.
+ * registration itself and bakes that price into the capture context, so the
+ * amount taken is the one it calculated whichever way the transaction runs.
+ *
+ * By default the capture context carries a complete mandate, which puts 3-D
+ * Secure in front of a sale the gateway performs itself; the browser returns a
+ * signed result that is verified here. With the mandate switched off, the
+ * transient token is charged from the server instead.
  *
  * International categories are priced in USD but the bank settles in NPR, so
  * the fee is converted at the NRB rate before it reaches the gateway. The rate
@@ -94,10 +99,13 @@ class PaymentController extends Controller
     }
 
     /**
-     * Charge the transient token the SDK handed back.
+     * Settle the payment attempt the SDK just finished.
      *
      * Called by the checkout page over AJAX; answers with JSON so the page can
-     * show the gateway's message without losing the mounted checkout.
+     * show the gateway's message without losing the mounted checkout. Which of
+     * the two flows applies is decided by the configuration, not by the
+     * browser: a page that posts a result when no mandate is configured has it
+     * ignored, and one that posts none when a mandate is configured is refused.
      */
     public function process(Request $request, string $reference): JsonResponse
     {
@@ -105,6 +113,7 @@ class PaymentController extends Controller
 
         $request->validate([
             'transient_token' => 'required|string',
+            'payment_result'  => 'nullable|string',
         ]);
 
         if ($registration->isPaymentSettledOrPending()) {
@@ -117,6 +126,107 @@ class PaymentController extends Controller
         $order = $this->orderFor($registration);
         $token = $this->checkout->readTransientToken($request->input('transient_token'));
 
+        return $this->checkout->usesCompleteMandate()
+            ? $this->settleCompletedTransaction($request, $registration, $order, $token)
+            : $this->authorizeTransientToken($request, $registration, $order, $token);
+    }
+
+    /**
+     * Record a transaction the gateway ran under the complete mandate.
+     *
+     * Nothing is charged here — 3-D Secure and the sale already happened in the
+     * browser's conversation with the gateway. What is left is to prove the
+     * result is genuine and belongs to this registration, then act on it.
+     *
+     * @param  array<string, mixed>  $order
+     * @param  array<string, mixed>  $token
+     */
+    private function settleCompletedTransaction(
+        Request $request,
+        Registration $registration,
+        array $order,
+        array $token
+    ): JsonResponse {
+        try {
+            $jwt = trim((string) $request->input('payment_result'));
+
+            if ($jwt === '') {
+                throw new CybersourceException('The browser returned no payment result to verify.');
+            }
+
+            $result = $this->checkout->readTransactionResult($jwt);
+
+            // The signature proves the gateway issued this result; the
+            // reference proves it was issued for this registration, and not
+            // replayed from another delegate's successful payment.
+            if ($result['reference'] !== null && $result['reference'] !== $order['reference']) {
+                throw CybersourceException::withContext(
+                    'The payment result belongs to a different registration.',
+                    ['expected' => $order['reference'], 'received' => $result['reference']]
+                );
+            }
+        } catch (CybersourceException $e) {
+            Log::error('Unified Checkout payment result could not be verified: ' . $e->getMessage(), $e->context);
+
+            $this->recordTransaction($registration, $order, $token, [
+                'status'         => 'ERROR',
+                'transaction_id' => null,
+                'reason'         => 'RESULT_UNVERIFIED',
+                'message'        => $e->getMessage(),
+                'approved'       => false,
+                'raw'            => [],
+            ]);
+
+            $registration->payment_status = Registration::PAYMENT_FAILED;
+            $registration->save();
+
+            // Unlike a failed authorization, the card may well have been
+            // charged here — the gateway ran the transaction. Sending the
+            // delegate back to try again could take the money twice, so ask
+            // them to check with the committee instead.
+            return response()->json([
+                'success' => false,
+                'message' => 'Your payment could not be confirmed. Please do not pay again — contact the organising committee quoting reference ' . $order['reference'] . '.',
+            ], 502);
+        }
+
+        // The verified result is the better witness to payer authentication
+        // than the transient token, which the browser supplied unverified.
+        $token['authenticated'] = $result['authenticated'] || ($token['authenticated'] ?? false);
+
+        $transaction = $this->recordTransaction($registration, $order, $token, $result);
+
+        if (! $result['approved']) {
+            $registration->payment_status = Registration::PAYMENT_FAILED;
+            $registration->save();
+
+            return response()->json([
+                'success' => false,
+                'message' => $this->declineMessage($result),
+            ], 422);
+        }
+
+        $this->markPaid($registration, $result, $transaction);
+
+        return response()->json([
+            'success'  => true,
+            'redirect' => route('registration.payment.complete', $registration->payment_reference),
+        ]);
+    }
+
+    /**
+     * Charge the transient token from the server, for the flow without a
+     * complete mandate.
+     *
+     * @param  array<string, mixed>  $order
+     * @param  array<string, mixed>  $token
+     */
+    private function authorizeTransientToken(
+        Request $request,
+        Registration $registration,
+        array $order,
+        array $token
+    ): JsonResponse {
         try {
             $result = $this->checkout->authorize($request->input('transient_token'), $order);
         } catch (CybersourceException $e) {
