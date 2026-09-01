@@ -13,41 +13,7 @@
                     <table class="table admin-table table-bordered table-striped mb-0">
                         <tbody>
                             @php($i = 0)
-                            <tr>
-                                <td>{{++$i}}</td>
-                                <th>Logo</th>
-                                <td>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                        <label for="">Light Logo</label>
-                                        <div class="thumbnail-container clearfix">
-                                        <button type="button" class="btn btn-xs btn-danger clear-media">&times;</button>
-                                        <a class="media-open waves-effect waves-light btn btn-sm btn-primary" href="javascript:void(0)" data-for="logo" data-type="input">Choose Image</a>
-                                        <div class="image-preview media-image-content" id="logo_preview">
-                                            @if(config('setting.logo'))
-                                            {!!get_attachment(config('setting.logo'))!!}
-                                            @endif
-                                        </div>
-                                        </div>
-                                        <input type="hidden" class="image image_id_content"  id="logo" name="logo" value="{{config('setting.logo')}}">
-                                        </div>
-                                        <div class="col-md-6">
-                                        <label for="">Dark Logo</label>
-                                        <div class="thumbnail-container clearfix">
-                                          <button type="button" class="btn btn-xs btn-danger clear-media">&times;</button>
-                                          <a class="media-open waves-effect waves-light btn btn-sm btn-primary" href="javascript:void(0)" data-for="dark_logo" data-type="input">Choose Image</a>
-                                          <div class="image-preview media-image-content" id="dark_logo_preview">
-                                            @if(config('setting.dark_logo'))
-                                            {!!get_attachment(config('setting.dark_logo'))!!}
-                                            @endif
-                                          </div>
-                                        </div>
-                                        <input type="hidden" class="image image_id_content"  id="dark_logo" name="dark_logo" value="{{config('setting.dark_logo')}}">
-                                        </div>
-                                    </div>
 
-                                </td>
-                            </tr>
 
                             @php($configurations = array(
                                     'pemail'=>'Primary Email',
@@ -61,7 +27,6 @@
                                     'linkedin'=>'Linkedin URL',
                                     'youtube' =>'Youtube',
                                     'instagram' =>'Instagram',
-                                    'working_hours'=>'Working Hours',
                                 )
                             )
                             @foreach($configurations as $configname => $configtitle)

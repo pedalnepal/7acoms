@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Models\AbstractSubmission;
+use App\Models\Registration;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -15,7 +16,9 @@ class DashboardController extends Controller
 
     public function index()
     {
-
-        return view('admin.dashboard');
+        return view('admin.dashboard', [
+            'totalRegistrations' => Registration::count(),
+            'totalAbstracts'     => AbstractSubmission::count(),
+        ]);
     }
 }

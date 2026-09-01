@@ -18,5 +18,34 @@
     </div>
 </div>
 
+{{-- Overview --}}
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <a href="{{ route('registration.index') }}" class="dashboard-stat-link">
+            <div class="card admin-panel-card dashboard-stat-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="dashboard-stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+                    <div>
+                        <div class="dashboard-stat-value">{{ number_format($totalRegistrations) }}</div>
+                        <div class="dashboard-stat-label">Total Registrations</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <a href="{{ route('abstract.index') }}" class="dashboard-stat-link">
+            <div class="card admin-panel-card dashboard-stat-card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="dashboard-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+                    <div>
+                        <div class="dashboard-stat-value">{{ number_format($totalAbstracts) }}</div>
+                        <div class="dashboard-stat-label">Total Abstract Submissions</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
 
 @endsection

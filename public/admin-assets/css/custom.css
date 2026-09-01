@@ -535,6 +535,43 @@ header {
   flex-shrink: 0;
 }
 
+.dashboard-stat-link {
+  display: block;
+  text-decoration: none;
+}
+.dashboard-stat-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.dashboard-stat-link:hover .dashboard-stat-card {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(22, 61, 6, 0.14);
+}
+.dashboard-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #206000 0%, #2c8c01 100%);
+  color: #fff;
+  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dashboard-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a2e14;
+  line-height: 1.2;
+}
+.dashboard-stat-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 /* Select2 admin styling */
 .select2-container {
   width: 100% !important;
