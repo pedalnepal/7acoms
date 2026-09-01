@@ -26,7 +26,7 @@ class SuperAdminSeeder extends Seeder
         $admin->syncPermissions(Permission::where('guard_name', 'web')->get());
 
         $name     = env('ADMIN_NAME', 'Super Admin');
-        $email    = env('ADMIN_EMAIL', 'admin@acoms.test');
+        $email    = env('ADMIN_EMAIL', 'rakesh@pedal.com.np');
         $password = env('ADMIN_PASSWORD', 'password');
 
         $user = User::updateOrCreate(

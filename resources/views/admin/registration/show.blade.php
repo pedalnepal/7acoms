@@ -72,6 +72,11 @@
                                     @if($registration->fee_tier)
                                         <span class="text-muted">({{ucfirst($registration->fee_tier)}} rate)</span>
                                     @endif
+                                    @if($registration->isConverted())
+                                        <div class="small text-muted">
+                                            Charged {{$registration->formattedChargeAmount()}} — {{$registration->fxRateLabel()}}
+                                        </div>
+                                    @endif
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
@@ -102,7 +107,15 @@
                                             <td>{{$txn->reference}}</td>
                                             <td>{{$txn->transaction_id ?: '—'}}</td>
                                             <td>{{$txn->card_masked ?: '—'}}</td>
-                                            <td>{{$txn->currency}} {{number_format((float) $txn->amount, 2)}}</td>
+                                            <td>
+                                                {{$txn->currency}} {{number_format((float) $txn->amount, 2)}}
+                                                @if($txn->wasConverted())
+                                                    <div class="small text-muted">
+                                                        for {{$txn->presentment_currency}} {{number_format((float) $txn->presentment_amount, 2)}}
+                                                        @ {{rtrim(rtrim(number_format((float) $txn->fx_rate, 4), '0'), '.')}}
+                                                    </div>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <span class="badge bg-{{$txn->isSuccessful() ? 'success' : 'danger'}}">{{$txn->status}}</span>
                                                 @if($txn->message)

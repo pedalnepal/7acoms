@@ -47,7 +47,7 @@ class FrontController extends Controller
     public function aboutACOMS()
     {
         $page = \App\Models\Page::whereIn('permalink', ['about-acoms'])
-                    ->orWhere('id', 37)
+                    ->orWhere('id', 1)
                     ->firstOrFail();
 
         $data = [
@@ -65,7 +65,7 @@ class FrontController extends Controller
     public function aboutNAOMS()
     {
         $page = \App\Models\Page::whereIn('permalink', ['about-naoms'])
-                    ->orWhere('id', 38)
+                    ->orWhere('id', 2)
                     ->firstOrFail();
 
         $data = [
@@ -83,7 +83,7 @@ class FrontController extends Controller
     public function contactUs()
     {
         $page = \App\Models\Page::whereIn('permalink', ['contact-us'])
-                    ->orWhere('id', 39)
+                    ->orWhere('id', 3)
                     ->firstOrFail();
 
         $data = [
@@ -101,7 +101,7 @@ class FrontController extends Controller
     public function registrationDetails()
     {
         $page = \App\Models\Page::whereIn('permalink', ['registration-details'])
-                    ->orWhere('id', 40)
+                    ->orWhere('id', 4)
                     ->firstOrFail();
 
         $data = [
@@ -118,7 +118,7 @@ class FrontController extends Controller
     public function abstractSubmit()
     {
         $page = \App\Models\Page::whereIn('permalink', ['abstract-submission'])
-                    ->orWhere('id', 41)
+                    ->orWhere('id', 5)
                     ->firstOrFail();
 
         $data = [
@@ -213,7 +213,7 @@ class FrontController extends Controller
     public function organizingCommittee()
     {
         $page = \App\Models\Page::whereIn('permalink', ['organizing-committee'])
-                    ->orWhere('id', 42)
+                    ->orWhere('id', 6)
                     ->firstOrFail();
 
         $data = [
@@ -232,7 +232,7 @@ class FrontController extends Controller
     public function registrationForm()
     {
         $page = \App\Models\Page::whereIn('permalink', ['registration-form'])
-                    ->orWhere('id', 43)
+                    ->orWhere('id', 7)
                     ->firstOrFail();
 
         $data = [

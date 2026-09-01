@@ -11,15 +11,29 @@ class PaymentTransaction extends Model
 
     protected $fillable = [
         'registration_id', 'reference', 'transaction_id', 'status', 'amount', 'currency',
+        'presentment_amount', 'presentment_currency', 'fx_rate', 'fx_rate_date',
         'payment_type', 'card_type', 'card_masked', 'authenticated',
         'reason_code', 'message', 'response',
     ];
 
     protected $casts = [
-        'response'      => 'array',
-        'authenticated' => 'boolean',
-        'amount'        => 'decimal:2',
+        'response'           => 'array',
+        'authenticated'      => 'boolean',
+        'amount'             => 'decimal:2',
+        'presentment_amount' => 'decimal:2',
+        'fx_rate'            => 'decimal:6',
+        'fx_rate_date'       => 'date',
     ];
+
+    /**
+     * Whether this charge was taken in a different currency from the fee it
+     * settles — the amount/currency here are always what the gateway charged.
+     */
+    public function wasConverted(): bool
+    {
+        return $this->presentment_currency !== null
+            && $this->presentment_currency !== $this->currency;
+    }
 
     public function registration(): BelongsTo
     {

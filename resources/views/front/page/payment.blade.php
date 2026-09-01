@@ -80,7 +80,26 @@
                   <dt>Total due</dt>
                   <dd>{{ $registration->formattedAmount() }}</dd>
                 </div>
+
+                @if($registration->isConverted())
+                  {{-- The bank settles in NPR, so this is what the statement
+                       will actually read. Saying so here, with the rate,
+                       prevents the mismatch turning into a support query. --}}
+                  <div class="pay-row pay-total">
+                    <dt>Charged as</dt>
+                    <dd>{{ $registration->formattedChargeAmount() }}</dd>
+                  </div>
+                @endif
               </dl>
+
+              @if($registration->isConverted())
+                <p class="save-note d-block">
+                  <i class="fa-solid fa-circle-info me-1"></i>
+                  Your fee of {{ $registration->formattedAmount() }} is collected in Nepali Rupees at the
+                  Nepal Rastra Bank rate of {{ $registration->fxRateLabel() }}. Your card will be
+                  charged {{ $registration->formattedChargeAmount() }}.
+                </p>
+              @endif
 
               <p class="save-note mt-3 d-block">
                 <i class="fa-solid fa-lock me-1"></i>

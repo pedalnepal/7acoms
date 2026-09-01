@@ -10,6 +10,9 @@ A registration fee has been paid online.
 - **Email:** {{ $registration->email ?? '—' }}
 - **Category:** {{ $registration->category ?? '—' }}
 - **Amount:** {{ $registration->formattedAmount() }}
+@if ($registration->isConverted())
+- **Charged:** {{ $registration->formattedChargeAmount() }} ({{ $registration->fxRateLabel() }})
+@endif
 - **Reference:** {{ $transaction->reference }}
 - **Transaction ID:** {{ $transaction->transaction_id ?? '—' }}
 - **Status:** {{ $transaction->status }}
@@ -28,6 +31,10 @@ Thank you — we have received your payment for the **7th ACOMS Trainee Conferen
 @component('mail::panel')
 - **Reference:** {{ $transaction->reference }}
 - **Amount paid:** {{ $registration->formattedAmount() }}
+@if ($registration->isConverted())
+- **Charged to your card:** {{ $registration->formattedChargeAmount() }}
+- **Exchange rate:** {{ $registration->fxRateLabel() }}
+@endif
 - **Paid on:** {{ optional($registration->paid_at)->format('d M Y, H:i') ?? now()->format('d M Y, H:i') }}
 - **Category:** {{ $registration->category ?? '—' }}
 - **Registering For:** {{ $registration->reg_for ?? '—' }}

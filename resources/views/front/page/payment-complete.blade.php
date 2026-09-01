@@ -88,6 +88,16 @@
               <dt>Amount</dt>
               <dd>{{ $registration->formattedAmount() }}</dd>
             </div>
+            @if($registration->isConverted())
+              <div class="pay-row">
+                <dt>Charged</dt>
+                <dd>{{ $registration->formattedChargeAmount() }}</dd>
+              </div>
+              <div class="pay-row">
+                <dt>Exchange rate</dt>
+                <dd>{{ $registration->fxRateLabel() }}</dd>
+              </div>
+            @endif
             @if($registration->paid_at)
               <div class="pay-row">
                 <dt>Paid on</dt>

@@ -38,7 +38,6 @@
             <select class="form-control" id="link_from" name="dbname">
               <option value="">Select</option>
               <option <?php if(@$menu->dbname=='pages') echo 'selected'; ?> value="pages">Page</option>
-              <option <?php if(@$menu->dbname=='categories') echo 'selected'; ?> value="categories">Category</option>
               <option <?php if(@$menu->dbname=='products') echo 'selected'; ?> value="products">Product</option>
             </select>
           </div>

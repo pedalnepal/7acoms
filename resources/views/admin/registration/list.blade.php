@@ -56,7 +56,12 @@
                                 @endphp
                                 <span class="badge bg-{{$badge}}">{{ucfirst($registration->payment_status ?? 'unpaid')}}</span>
                                 @if($registration->amount)
-                                    <div class="small text-muted">{{$registration->formattedAmount()}}</div>
+                                    <div class="small text-muted">
+                                        {{$registration->formattedAmount()}}
+                                        @if($registration->isConverted())
+                                            <span title="Charged in the currency the bank settles">({{$registration->formattedChargeAmount()}})</span>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                             <td>{{$registration->created_at ? $registration->created_at->format('d M Y, h:i A') : ''}}</td>

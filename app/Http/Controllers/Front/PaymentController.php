@@ -8,6 +8,8 @@ use App\Models\PaymentTransaction;
 use App\Models\Registration;
 use App\Services\Cybersource\CybersourceException;
 use App\Services\Cybersource\UnifiedCheckoutService;
+use App\Services\Forex\CurrencyConverter;
+use App\Services\Forex\ForexException;
 use App\Services\RegistrationFeeCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,14 +23,20 @@ use Illuminate\Support\Facades\Mail;
  * The browser never states what it owes: this controller prices the
  * registration itself, builds the capture context from that price, and charges
  * the returned transient token for the same amount.
+ *
+ * International categories are priced in USD but the bank settles in NPR, so
+ * the fee is converted at the NRB rate before it reaches the gateway. The rate
+ * is fixed when the checkout page is built and reused when the token is
+ * charged — re-converting between the two would charge an amount the capture
+ * context was never created for.
  */
 class PaymentController extends Controller
 {
     public function __construct(
         private UnifiedCheckoutService $checkout,
-        private RegistrationFeeCalculator $fees
-    ) {
-    }
+        private RegistrationFeeCalculator $fees,
+        private CurrencyConverter $converter
+    ) {}
 
     /**
      * The checkout page. Creates a fresh capture context on every load, since
@@ -44,7 +52,17 @@ class PaymentController extends Controller
 
         // Re-price on every visit: the tier is set by the date payment is made,
         // so a delegate who returns after a deadline pays the current rate.
-        $this->repriceRegistration($registration);
+        try {
+            $this->repriceRegistration($registration);
+        } catch (ForexException $e) {
+            Log::error('Registration payment could not be priced: ' . $e->getMessage(), $e->context);
+
+            return view('front.page.payment', [
+                'registration' => $registration,
+                'session'      => null,
+                'error'        => 'We cannot confirm the exchange rate for your registration fee at the moment. Please try again shortly, or contact the organising committee.',
+            ] + $this->pageMeta());
+        }
 
         if (! $this->checkout->isConfigured()) {
             Log::error('Registration payment attempted while Cybersource is not configured.');
@@ -156,16 +174,26 @@ class PaymentController extends Controller
     }
 
     /**
-     * Recalculate and store what this registration owes.
+     * Recalculate and store what this registration owes, together with the
+     * amount and rate the card will be charged at.
+     *
+     * @throws ForexException when the fee cannot be converted for settlement.
      */
     private function repriceRegistration(Registration $registration): void
     {
-        $quote = $this->fees->calculate($registration);
+        $quote  = $this->fees->calculate($registration);
+        $charge = $this->converter->settle($quote['total'], $quote['currency']);
 
         $registration->amount        = $quote['total'];
         $registration->currency      = $quote['currency'];
         $registration->fee_tier      = $quote['tier'];
         $registration->fee_breakdown = $quote['lines'];
+
+        $registration->charge_amount   = $charge['amount'];
+        $registration->charge_currency = $charge['currency'];
+        $registration->fx_rate         = $charge['rate'];
+        $registration->fx_rate_date    = $charge['rate_date'];
+
         $registration->save();
     }
 
@@ -174,10 +202,12 @@ class PaymentController extends Controller
      */
     private function orderFor(Registration $registration): array
     {
+        // The amount is the settled one, in the currency the bank accepts, and
+        // was fixed when the page was built — never recalculated here.
         return [
             'reference' => $registration->paymentCode(),
-            'amount'    => $registration->amount,
-            'currency'  => $registration->currency,
+            'amount'    => $registration->chargeAmount(),
+            'currency'  => $registration->chargeCurrency(),
             'bill_to'   => [
                 'firstName'   => $this->firstName($registration->full_name),
                 'lastName'    => $this->lastName($registration->full_name),
@@ -199,19 +229,25 @@ class PaymentController extends Controller
         array $token,
         array $result
     ): PaymentTransaction {
+        // amount / currency are what the gateway was asked to take; the
+        // presentment pair is the published fee those settle.
         return $registration->transactions()->create([
-            'reference'      => $order['reference'],
-            'transaction_id' => $result['transaction_id'],
-            'status'         => $result['status'],
-            'amount'         => $order['amount'],
-            'currency'       => $order['currency'],
-            'payment_type'   => $token['payment_type'] ?? null,
-            'card_type'      => $token['card_type'] ?? null,
-            'card_masked'    => $token['card_masked'] ?? null,
-            'authenticated'  => (bool) ($token['authenticated'] ?? false),
-            'reason_code'    => $result['reason'],
-            'message'        => $result['message'],
-            'response'       => $result['raw'],
+            'reference'            => $order['reference'],
+            'transaction_id'       => $result['transaction_id'],
+            'status'               => $result['status'],
+            'amount'               => $order['amount'],
+            'currency'             => $order['currency'],
+            'presentment_amount'   => $registration->amount,
+            'presentment_currency' => $registration->currency,
+            'fx_rate'              => $registration->fx_rate,
+            'fx_rate_date'         => $registration->fx_rate_date,
+            'payment_type'         => $token['payment_type'] ?? null,
+            'card_type'            => $token['card_type'] ?? null,
+            'card_masked'          => $token['card_masked'] ?? null,
+            'authenticated'        => (bool) ($token['authenticated'] ?? false),
+            'reason_code'          => $result['reason'],
+            'message'              => $result['message'],
+            'response'             => $result['raw'],
         ]);
     }
 
