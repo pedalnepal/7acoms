@@ -29,7 +29,7 @@ return [
     'categories' => [
         'NAOMS Member' => [
             'currency' => 'NPR',
-            'fees'     => ['early' => 18000, 'regular' => 20000, 'late' => 22000],
+            'fees'     => ['early' => 1, 'regular' => 20000, 'late' => 22000],
         ],
         'Non-NAOMS Member (Nepalese)' => [
             'currency' => 'NPR',
