@@ -176,6 +176,45 @@
   var loadingEl = document.getElementById('payment-loading');
   var alertEl   = document.getElementById('payment-alert');
 
+  function hideLoading() {
+    if (loadingEl) {
+      loadingEl.remove();
+      loadingEl = null;
+    }
+  }
+
+  // The SDK's 'ready' event does not fire on every integration, so the spinner
+  // must not depend on it alone — it also clears the moment the checkout puts
+  // anything into either mount point. mount() itself does not resolve until the
+  // delegate submits, which is far too late to be the signal.
+  function clearLoadingWhenMounted() {
+    var targets = ['payment-buttons', 'payment-form']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    function mounted() {
+      return targets.some(function (el) { return el.childElementCount > 0; });
+    }
+
+    if (mounted()) {
+      hideLoading();
+      return null;
+    }
+
+    var observer = new MutationObserver(function () {
+      if (mounted()) {
+        hideLoading();
+        observer.disconnect();
+      }
+    });
+
+    targets.forEach(function (el) {
+      observer.observe(el, { childList: true, subtree: true });
+    });
+
+    return observer;
+  }
+
   var paidButUnconfirmed = 'Your payment went through but we could not record it. '
     + 'Please do not pay again — contact the organising committee quoting reference '
     + @json($registration->paymentCode()) + '.';
@@ -213,6 +252,7 @@
   async function launchCheckout() {
     var client;
     var checkout;
+    var mountWatcher;
     // Set once the gateway has actually run the transaction, so a failure
     // after that point never tells the delegate to try again.
     var transactionRan = false;
@@ -232,8 +272,10 @@
 
       checkout.on('ready', function () {
         clearError();
-        if (loadingEl) loadingEl.remove();
+        hideLoading();
       });
+
+      mountWatcher = clearLoadingWhenMounted();
 
       var transientToken = await checkout.mount({
         paymentSelection: '#payment-buttons',
@@ -263,7 +305,7 @@
         ? paidButUnconfirmed
         : 'The payment could not be completed. Please try again.'));
     } catch (error) {
-      if (loadingEl) loadingEl.remove();
+      hideLoading();
 
       console.error(error);
 
@@ -278,6 +320,7 @@
         showError('Something went wrong while loading the payment form. Please refresh the page and try again.');
       }
     } finally {
+      if (mountWatcher) mountWatcher.disconnect();
       if (checkout) checkout.destroy();
       if (client) client.destroy();
     }
