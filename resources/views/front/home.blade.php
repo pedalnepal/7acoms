@@ -184,7 +184,7 @@
           Experience an exceptional gathering where world-class scientific learning meets the timeless beauty, rich cultural heritage, and warm hospitality of Nepal.<br><br>
           Join the global OMFS community as we exchange knowledge, foster meaningful collaborations, celebrate excellence in Oral and Maxillofacial Surgery, and inspire the next generation of leaders shaping the future of our specialty.
         </p>
-        <a href="#" class="btn-cta-reg">Register Now!</a>
+        <a href="{{url('registration-form')}}" class="btn-cta-reg">Register Now!</a>
       </div>
     </div>
   </div>
