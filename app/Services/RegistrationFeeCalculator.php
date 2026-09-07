@@ -39,10 +39,6 @@ class RegistrationFeeCalculator
             'amount' => (float) $category['fees'][$tier],
         ]];
 
-        foreach ($this->accompanyingLines($registration, $tier, $currency) as $line) {
-            $lines[] = $line;
-        }
-
         foreach ($this->addOnLines($registration, $currency) as $line) {
             $lines[] = $line;
         }
@@ -63,8 +59,8 @@ class RegistrationFeeCalculator
      * of being typed in once and going stale.
      *
      * This is deliberately just the category's own fee, not a full quote: the
-     * form doesn't yet know accompanying-person counts or add-ons, so it can
-     * only show what a category costs on its own, same as it always has.
+     * form doesn't yet know which add-ons apply, so it can only show what a
+     * category costs on its own, same as it always has.
      *
      * @return array<string, array{currency: string, amount: float}>
      */
@@ -105,42 +101,7 @@ class RegistrationFeeCalculator
     }
 
     /**
-     * Accompanying people are billed per head, at the accompanying rate that
-     * matches the delegate's own currency. A delegate who registered *as* an
-     * accompanying person is not charged again.
-     */
-    private function accompanyingLines(Registration $registration, string $tier, string $currency): array
-    {
-        $count = (int) $registration->acp_count;
-
-        if (strcasecmp((string) $registration->accompanying, 'Yes') !== 0 || $count < 1) {
-            return [];
-        }
-
-        if (in_array($registration->category, config('registration.accompanying_only_categories'), true)) {
-            return [];
-        }
-
-        $name = config("registration.accompanying_category.$currency");
-
-        if (! $name) {
-            return [];
-        }
-
-        $rate = (float) $this->category($name)['fees'][$tier];
-
-        if ($rate <= 0) {
-            return [];
-        }
-
-        return [[
-            'label'  => $name . ' × ' . $count,
-            'amount' => $rate * $count,
-        ]];
-    }
-
-    /**
-     * Hands-on course and accommodation supplements. Both are zero-rated until
+     * Hands-on course and master class supplements. Both are zero-rated until
      * the committee publishes a price, in which case they are simply omitted.
      */
     private function addOnLines(Registration $registration, string $currency): array
@@ -155,16 +116,11 @@ class RegistrationFeeCalculator
             }
         }
 
-        $rooms = (int) $registration->acc_rooms;
-
-        if (strcasecmp((string) $registration->accommodation, 'Yes') === 0 && $rooms > 0 && $registration->acc_type) {
-            $rate = (float) config("registration.accommodation.{$registration->acc_type}.$currency", 0);
+        if (str_contains((string) $registration->reg_for, 'Master Class')) {
+            $rate = (float) config("registration.master_class.$currency", 0);
 
             if ($rate > 0) {
-                $lines[] = [
-                    'label'  => 'Accommodation — ' . $registration->acc_type . ' × ' . $rooms,
-                    'amount' => $rate * $rooms,
-                ];
+                $lines[] = ['label' => 'Master Class', 'amount' => $rate];
             }
         }
 

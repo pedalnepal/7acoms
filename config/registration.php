@@ -21,7 +21,7 @@ return [
     // listed here falls into the final tier.
     'tiers' => [
         'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-11-15'],
-        'regular' => ['label' => 'Registration',            'until' => '2027-01-15'],
+        'regular' => ['label' => 'Regular Registration',    'until' => '2027-01-15'],
         'late'    => ['label' => 'Late Registration',       'until' => null],
     ],
 
@@ -57,20 +57,13 @@ return [
         ],
     ],
 
-    // Which accompanying-person category to bill per accompanying head, chosen
-    // by the currency of the delegate's own category.
-    'accompanying_category' => [
-        'NPR' => 'Accompanying Person',
-        'USD' => 'Accompanying Person (International)',
-    ],
-
     /*
     |----------------------------------------------------------------------
     | Add-ons
     |----------------------------------------------------------------------
     |
     | The published fee table covers delegate categories only. The hands-on
-    | course and accommodation have no published rate, so they are billed at
+    | course and master class have no published rate, so they are billed at
     | zero until the committee sets one here (per currency).
     |
     */
@@ -80,17 +73,8 @@ return [
         'USD' => 0,
     ],
 
-    // Charged per room booked.
-    'accommodation' => [
-        'Single' => ['NPR' => 0, 'USD' => 0],
-        'Double / Twin' => ['NPR' => 0, 'USD' => 0],
-        'Deluxe' => ['NPR' => 0, 'USD' => 0],
-    ],
-
-    // Registration categories that are themselves an accompanying person, and
-    // so are never charged an additional accompanying head.
-    'accompanying_only_categories' => [
-        'Accompanying Person',
-        'Accompanying Person (International)',
+    'master_class' => [
+        'NPR' => 0,
+        'USD' => 0,
     ],
 ];

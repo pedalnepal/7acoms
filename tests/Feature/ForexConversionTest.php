@@ -127,8 +127,6 @@ class ForexConversionTest extends TestCase
             'nationality'       => 'Singaporean',
             'category'          => 'International Delegate',
             'reg_for'           => 'Conference',
-            'accommodation'     => 'No',
-            'accompanying'      => 'No',
             'status'            => 'pending',
             'payment_reference' => (string) Str::uuid(),
             'payment_status'    => Registration::PAYMENT_UNPAID,

@@ -301,50 +301,36 @@ class FrontController extends Controller
     {
         // Choice fields are whitelisted against the exact values the form
         // offers, so a tampered POST can't slip an unpriced category past the
-        // fee calculator or a bogus room type past the accommodation table.
-        $categories = array_keys(config('registration.categories'));
-        $roomTypes  = array_keys(config('registration.accommodation'));
+        // fee calculator.
+        $categories   = array_keys(config('registration.categories'));
+        $designations = ['Resident/Dental Surgeons/Students', 'Consultant/Faculty', 'Accompanying Person'];
 
         $request->validate([
             'date'          => 'nullable|date',
             'fullName'      => 'required|string|max:255',
             'email'         => 'required|email|max:255',
             'phone'         => 'required|string|max:50',
-            'designation'   => 'required|string|max:255',
+            'designation'   => ['required', \Illuminate\Validation\Rule::in($designations)],
             'workplace'     => 'required|string|max:255',
-            'idCard'        => 'required|file|mimes:jpg,jpeg,png|max:4096',
-            'nationality'   => ['required', \Illuminate\Validation\Rule::in(['Nepali', 'SAARC', 'Non-SAARC'])],
+            // Only Residents / Dental Surgeons / Students attach a recommendation
+            // letter from the department head; hidden and optional for everyone else.
+            'recommendationLetter' => 'nullable|required_if:designation,Resident/Dental Surgeons/Students|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'nationality'   => ['required', \Illuminate\Validation\Rule::in(['Nepali', 'International'])],
             'naomsMember'   => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
-            'memberId'      => 'nullable|required_if:naomsMember,Yes|string|max:100',
-            'regFor'        => ['required', \Illuminate\Validation\Rule::in(['Conference', 'Conference + Hands-on Course', 'Hands-on Course'])],
-            'accommodation' => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
-            'accRooms'      => 'nullable|required_if:accommodation,Yes|integer|min:1|max:20',
-            'accType'       => ['nullable', 'required_if:accommodation,Yes', \Illuminate\Validation\Rule::in($roomTypes)],
-            'accompanying'  => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
-            'acpCount'      => 'nullable|required_if:accompanying,Yes|integer|min:1|max:20',
+            'regFor'        => ['required', \Illuminate\Validation\Rule::in(['Conference', 'Conference + Hands-on Course', 'Conference + Master Class', 'Conference + Hands-on Course + Master Class'])],
             'category'      => ['required', \Illuminate\Validation\Rule::in($categories)],
-            'paymentReceipt'=> 'nullable|file|mimes:jpg,jpeg,png|max:4096',
+            'paymentReceipt'=> 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'others'        => 'nullable|string|max:2000',
         ], [
-            'idCard.mimes'         => 'The ID card must be a JPG or PNG image.',
-            'idCard.max'           => 'The ID card image may not be larger than 4 MB.',
-            'paymentReceipt.mimes' => 'The payment receipt must be a JPG or PNG image.',
+            'designation.in'                  => 'Please choose a valid designation.',
+            'recommendationLetter.required_if' => 'Please upload the recommendation letter from the department head.',
+            'recommendationLetter.mimes'       => 'The recommendation letter must be a JPG, PNG or PDF file.',
+            'recommendationLetter.max'         => 'The recommendation letter file may not be larger than 4 MB.',
+            'paymentReceipt.mimes' => 'The payment receipt must be a JPG, PNG or PDF file.',
             'paymentReceipt.max'   => 'The payment receipt may not be larger than 4 MB.',
             'category.required'    => 'Please choose the registration category that applies to you.',
             'category.in'          => 'Please choose the registration category that applies to you.',
-            'memberId.required_if' => 'Please enter your NAOMS membership ID.',
-            'accType.in'           => 'Please select a valid room type.',
-            'accRooms.required_if' => 'Please specify how many rooms you need.',
-            'accType.required_if'  => 'Please select a room type.',
-            'acpCount.required_if' => 'Please specify how many accompanying people you are bringing.',
         ]);
-
-        // Drop any answers that belong to a conditional panel the delegate
-        // closed again — the browser leaves the old value in the hidden input,
-        // and only the controlling "Yes" answer should keep it.
-        $isMember      = $request->naomsMember === 'Yes';
-        $wantsRoom     = $request->accommodation === 'Yes';
-        $hasCompanions = $request->accompanying === 'Yes';
 
         $reg = new \App\Models\Registration;
         $reg->reg_date      = $request->date;
@@ -355,13 +341,7 @@ class FrontController extends Controller
         $reg->workplace     = $request->workplace;
         $reg->nationality   = $request->nationality;
         $reg->naoms_member  = $request->naomsMember;
-        $reg->member_id     = $isMember ? $request->memberId : null;
         $reg->reg_for       = $request->regFor;
-        $reg->accommodation = $request->accommodation;
-        $reg->acc_rooms     = $wantsRoom ? $request->accRooms : null;
-        $reg->acc_type      = $wantsRoom ? $request->accType : null;
-        $reg->accompanying  = $request->accompanying;
-        $reg->acp_count     = $hasCompanions ? $request->acpCount : null;
         $reg->category      = $request->category;
         $reg->others        = $request->others;
         $reg->status        = 'pending';
@@ -371,10 +351,10 @@ class FrontController extends Controller
         $reg->payment_reference = (string) \Illuminate\Support\Str::uuid();
         $reg->payment_status    = \App\Models\Registration::PAYMENT_UNPAID;
 
-        if ($request->hasFile('idCard')) {
-            $stored = $this->storeUpload($request->file('idCard'), 'uploads/registrations');
-            $reg->id_card_name = $stored['name'];
-            $reg->id_card_path = $stored['path'];
+        if ($request->hasFile('recommendationLetter')) {
+            $stored = $this->storeUpload($request->file('recommendationLetter'), 'uploads/registrations');
+            $reg->recommendation_letter_name = $stored['name'];
+            $reg->recommendation_letter_path = $stored['path'];
         }
         if ($request->hasFile('paymentReceipt')) {
             $stored = $this->storeUpload($request->file('paymentReceipt'), 'uploads/registrations');

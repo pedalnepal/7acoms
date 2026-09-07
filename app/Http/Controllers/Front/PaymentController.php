@@ -423,8 +423,8 @@ class PaymentController extends Controller
 
     /**
      * The billing country prefilled in the checkout. Nepali delegates default
-     * to Nepal; everyone else is left to choose, since the form only records a
-     * SAARC / non-SAARC grouping.
+     * to Nepal; international delegates are left to choose, since the form only
+     * records a Nepali / International grouping.
      */
     private function billingCountry(Registration $registration): ?string
     {

@@ -223,8 +223,6 @@ class RegistrationPaymentTest extends TestCase
             'nationality'       => 'Nepali',
             'category'          => 'NAOMS Member',
             'reg_for'           => 'Conference',
-            'accommodation'     => 'No',
-            'accompanying'      => 'No',
             'status'            => 'pending',
             'payment_reference' => (string) \Illuminate\Support\Str::uuid(),
             'payment_status'    => Registration::PAYMENT_UNPAID,
@@ -237,14 +235,12 @@ class RegistrationPaymentTest extends TestCase
             'fullName'      => 'Asha Rai',
             'email'         => 'asha@example.com',
             'phone'         => '9800000000',
-            'designation'   => 'Resident',
+            'designation'   => 'Resident/Dental Surgeons/Students',
             'workplace'     => 'Kathmandu',
-            'idCard'        => UploadedFile::fake()->image('id.jpg'),
+            'recommendationLetter' => UploadedFile::fake()->image('letter.jpg'),
             'nationality'   => 'Nepali',
             'naomsMember'   => 'Yes',
             'regFor'        => 'Conference',
-            'accommodation' => 'No',
-            'accompanying'  => 'No',
             'category'      => 'NAOMS Member',
         ]);
 
@@ -263,11 +259,34 @@ class RegistrationPaymentTest extends TestCase
     {
         $this->post(route('registration.store'), [
             'fullName' => 'Asha Rai', 'email' => 'asha@example.com', 'phone' => '98',
-            'designation' => 'Resident', 'workplace' => 'KTM',
-            'idCard' => UploadedFile::fake()->image('id.jpg'),
+            'designation' => 'Consultant/Faculty', 'workplace' => 'KTM',
             'nationality' => 'Nepali', 'naomsMember' => 'Yes', 'regFor' => 'Conference',
-            'accommodation' => 'No', 'accompanying' => 'No', 'category' => 'NAOMS Member',
+            'category' => 'NAOMS Member',
         ])->assertSessionHasNoErrors();
+    }
+
+    public function test_a_resident_must_attach_a_recommendation_letter(): void
+    {
+        $this->post(route('registration.store'), [
+            'fullName' => 'Asha Rai', 'email' => 'asha@example.com', 'phone' => '98',
+            'designation' => 'Resident/Dental Surgeons/Students', 'workplace' => 'KTM',
+            'nationality' => 'Nepali', 'naomsMember' => 'Yes', 'regFor' => 'Conference',
+            'category' => 'NAOMS Member',
+        ])->assertSessionHasErrors('recommendationLetter');
+
+        $this->assertNull(Registration::first());
+    }
+
+    public function test_a_non_resident_does_not_need_a_recommendation_letter(): void
+    {
+        $this->post(route('registration.store'), [
+            'fullName' => 'Asha Rai', 'email' => 'asha@example.com', 'phone' => '98',
+            'designation' => 'Accompanying Person', 'workplace' => 'KTM',
+            'nationality' => 'Nepali', 'naomsMember' => 'No', 'regFor' => 'Conference',
+            'category' => 'Accompanying Person',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertNull(Registration::first()->recommendation_letter_path);
     }
 
     public function test_the_checkout_page_renders_the_sdk_from_the_capture_context(): void

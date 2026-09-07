@@ -20,19 +20,13 @@
                         <tr><th>Working Place</th><td>{{$registration->workplace}}</td></tr>
                         <tr><th>Nationality</th><td>{{$registration->nationality}}</td></tr>
                         <tr><th>NAOMS Member</th><td>{{$registration->naoms_member}}</td></tr>
-                        <tr><th>Membership ID</th><td>{{$registration->member_id ?: '—'}}</td></tr>
                         <tr><th>Registering For</th><td>{{$registration->reg_for}}</td></tr>
-                        <tr><th>Accommodation Required</th><td>{{$registration->accommodation}}</td></tr>
-                        <tr><th>No. of Rooms</th><td>{{$registration->acc_rooms ?: '—'}}</td></tr>
-                        <tr><th>Room Type</th><td>{{$registration->acc_type ?: '—'}}</td></tr>
-                        <tr><th>Accompanying Person</th><td>{{$registration->accompanying}}</td></tr>
-                        <tr><th>No. of People</th><td>{{$registration->acp_count ?: '—'}}</td></tr>
                         <tr><th>Registration Category</th><td>{{$registration->category}}</td></tr>
                         <tr>
-                            <th>ID Card</th>
+                            <th>Recommendation Letter</th>
                             <td>
-                                @if($registration->id_card_path)
-                                    <a class="btn btn-sm btn-primary" href="{{route('registration.download', [$registration->id, 'id_card'])}}">Download {{$registration->id_card_name}}</a>
+                                @if($registration->recommendation_letter_path)
+                                    <a class="btn btn-sm btn-primary" href="{{route('registration.download', [$registration->id, 'recommendation_letter'])}}">Download {{$registration->recommendation_letter_name}}</a>
                                 @else
                                     <span class="text-muted">Not uploaded</span>
                                 @endif

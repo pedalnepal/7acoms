@@ -27,7 +27,7 @@ class RegistrationController extends Controller
     {
         $registration = Registration::withTrashed()->findOrFail($id);
         $map = [
-            'id_card' => ['path' => $registration->id_card_path, 'name' => $registration->id_card_name],
+            'recommendation_letter' => ['path' => $registration->recommendation_letter_path, 'name' => $registration->recommendation_letter_name],
             'receipt' => ['path' => $registration->receipt_path, 'name' => $registration->receipt_name],
         ];
         if (!isset($map[$type]) || !$map[$type]['path'] || !file_exists(public_path($map[$type]['path']))) {
@@ -48,7 +48,7 @@ class RegistrationController extends Controller
     {
         $registration = Registration::withTrashed()->findOrFail($id);
         if ($registration->trashed()) {
-            foreach ([$registration->id_card_path, $registration->receipt_path] as $p) {
+            foreach ([$registration->recommendation_letter_path, $registration->receipt_path] as $p) {
                 if ($p && file_exists(public_path($p))) {
                     @unlink(public_path($p));
                 }

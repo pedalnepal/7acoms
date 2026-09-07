@@ -43,7 +43,6 @@
         <p class="ins-title"><i class="fa-solid fa-circle-info"></i> Before you fill in the form</p>
         <ul>
           <li>Complete every required field marked with an asterisk (<span style="color:var(--red)">*</span>).</li>
-          <li>Keep a scanned copy of your <strong>ID card</strong> ready (JPG or PNG, max 4&nbsp;MB).</li>
           <li>Choose the <strong>registration category</strong> that matches your professional and membership status.</li>
           <li>After you submit, you will be taken to a <strong>secure payment page</strong> to pay your registration fee by card.</li>
           <li>Your place is confirmed as soon as the payment goes through.</li>
@@ -108,8 +107,12 @@
 
             <div class="col-md-6">
               <label class="form-label" for="designation">Designation <span class="req">*</span></label>
-              <input type="text" class="form-control" id="designation" name="designation"
-                placeholder="e.g. Resident, OMFS" required>
+              <select class="form-select" id="designation" name="designation" required>
+                <option value="" selected disabled>Select designation</option>
+                <option value="Resident/Dental Surgeons/Students">Resident / Dental Surgeons / Students</option>
+                <option value="Consultant/Faculty">Consultant / Faculty</option>
+                <option value="Accompanying Person">Accompanying Person</option>
+              </select>
             </div>
 
             <div class="col-md-6">
@@ -118,13 +121,13 @@
                 placeholder="Hospital / Institution" required>
             </div>
 
-            <div class="col-12">
-              <label class="form-label d-block">Upload ID Card <span class="req">*</span></label>
+            <div class="col-12" id="recLetterWrap" hidden>
+              <label class="form-label d-block">Recommendation Letter from the Department Head <span class="req">*</span></label>
               <label class="upload-drop" id="idDrop" for="idFile">
-                <i class="fa-solid fa-id-card"></i>
-                <div class="ud-main">Drop your ID card here or <span>browse</span></div>
-                <div class="ud-sub">JPG or PNG, maximum 4&nbsp;MB</div>
-                <input type="file" id="idFile" name="idCard" accept=".jpg,.jpeg,.png" required>
+                <i class="fa-solid fa-file-lines"></i>
+                <div class="ud-main">Drop the recommendation letter here or <span>browse</span></div>
+                <div class="ud-sub">JPG, PNG or PDF, maximum 4&nbsp;MB</div>
+                <input type="file" id="idFile" name="recommendationLetter" accept=".jpg,.jpeg,.png,.pdf">
               </label>
               <div class="file-chosen" id="idChosen">
                 <i class="fa-solid fa-file-image"></i>
@@ -149,12 +152,8 @@
                   <label for="nat-nepali">Nepali</label>
                 </div>
                 <div class="pill-opt">
-                  <input type="radio" id="nat-saarc" name="nationality" value="SAARC">
-                  <label for="nat-saarc">SAARC</label>
-                </div>
-                <div class="pill-opt">
-                  <input type="radio" id="nat-nonsaarc" name="nationality" value="Non-SAARC">
-                  <label for="nat-nonsaarc">Non-SAARC</label>
+                  <input type="radio" id="nat-international" name="nationality" value="International">
+                  <label for="nat-international">International</label>
                 </div>
               </div>
             </div>
@@ -170,13 +169,6 @@
                   <input type="radio" id="mem-no" name="naomsMember" value="No">
                   <label for="mem-no">No</label>
                 </div>
-              </div>
-
-              <!-- conditional: membership ID -->
-              <div class="conditional" id="memberIdWrap">
-                <label class="form-label" for="memberId">Membership ID No.</label>
-                <input type="text" class="form-control" id="memberId" name="memberId"
-                  placeholder="Enter your NAOMS membership ID">
               </div>
             </div>
 
@@ -197,74 +189,17 @@
               <label for="rf-conf-course">Conference + Hands-on Course</label>
             </div>
             <div class="pill-opt">
-              <input type="radio" id="rf-course" name="regFor" value="Hands-on Course">
-              <label for="rf-course">Hands-on Course</label>
+              <input type="radio" id="rf-conf-master" name="regFor" value="Conference + Master Class">
+              <label for="rf-conf-master">Conference + Master Class</label>
+            </div>
+            <div class="pill-opt">
+              <input type="radio" id="rf-conf-course-master" name="regFor" value="Conference + Hands-on Course + Master Class">
+              <label for="rf-conf-course-master">Conference + Hands-on Course + Master Class</label>
             </div>
           </div>
         </div>
 
-        <!-- ============ 4. ACCOMMODATION & ACCOMPANYING ============ -->
-        <div class="form-section">
-          <p class="form-section-title"><i class="fa-solid fa-hotel"></i> Accommodation &amp; Accompanying Persons</p>
-          <div class="row g-4">
-
-            <div class="col-md-6">
-              <label class="form-label d-block">Accommodation Required <span class="req">*</span></label>
-              <div class="pill-group">
-                <div class="pill-opt">
-                  <input type="radio" id="acc-yes" name="accommodation" value="Yes" required>
-                  <label for="acc-yes">Yes</label>
-                </div>
-                <div class="pill-opt">
-                  <input type="radio" id="acc-no" name="accommodation" value="No">
-                  <label for="acc-no">No</label>
-                </div>
-              </div>
-
-              <!-- conditional: accommodation details -->
-              <div class="conditional" id="accWrap">
-                <div class="row g-3">
-                  <div class="col-6">
-                    <label class="form-label" for="accRooms">How Many Rooms</label>
-                    <input type="number" min="1" class="form-control" id="accRooms" name="accRooms" placeholder="0">
-                  </div>
-                  <div class="col-6">
-                    <label class="form-label" for="accType">Room Type</label>
-                    <select class="form-select" id="accType" name="accType">
-                      <option value="" selected disabled>Select type</option>
-                      <option>Single</option>
-                      <option>Double / Twin</option>
-                      <option>Deluxe</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label d-block">Accompanying Person <span class="req">*</span></label>
-              <div class="pill-group">
-                <div class="pill-opt">
-                  <input type="radio" id="acp-yes" name="accompanying" value="Yes" required>
-                  <label for="acp-yes">Yes</label>
-                </div>
-                <div class="pill-opt">
-                  <input type="radio" id="acp-no" name="accompanying" value="No">
-                  <label for="acp-no">No</label>
-                </div>
-              </div>
-
-              <!-- conditional: number of people -->
-              <div class="conditional" id="acpWrap">
-                <label class="form-label" for="acpCount">No. of People</label>
-                <input type="number" min="1" class="form-control" id="acpCount" name="acpCount" placeholder="0">
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ============ 5. CATEGORY & PAYMENT ============ -->
+        <!-- ============ 4. CATEGORY & PAYMENT ============ -->
         <div class="form-section">
           <p class="form-section-title"><i class="fa-solid fa-money-check-dollar"></i> Registration Category &amp; Payment</p>
 
@@ -316,8 +251,8 @@
             <label class="upload-drop" id="payDrop" for="payFile">
               <i class="fa-solid fa-cloud-arrow-up"></i>
               <div class="ud-main">Drop your payment receipt here or <span>browse</span></div>
-              <div class="ud-sub">JPG or PNG, maximum 4&nbsp;MB</div>
-              <input type="file" id="payFile" name="paymentReceipt" accept=".jpg,.jpeg,.png">
+              <div class="ud-sub">JPG, PNG or PDF, maximum 4&nbsp;MB</div>
+              <input type="file" id="payFile" name="paymentReceipt" accept=".jpg,.jpeg,.png,.pdf">
             </label>
             <div class="file-chosen" id="payChosen">
               <i class="fa-solid fa-file-image"></i>
@@ -370,7 +305,7 @@
     input.addEventListener('change', function () {
       if (input.files.length) {
         if (input.files[0].size > MAX) {
-          alert('File is larger than 4 MB. Please choose a smaller image.');
+          alert('File is larger than 4 MB. Please choose a smaller file.');
           input.value = '';
           chosen.classList.remove('show');
           return;
@@ -401,28 +336,26 @@
   wireUpload('idFile', 'idDrop', 'idChosen', 'idFileName', 'idRemove');
   wireUpload('payFile', 'payDrop', 'payChosen', 'payFileName', 'payRemove');
 
-  // ---- Conditional reveal panels ----
-  // requiredFieldIds are only enforced while their panel is shown, so a
-  // delegate who answers "No" is never blocked by a hidden required field.
-  function wireConditional(name, showValue, wrapId, requiredFieldIds) {
-    var wrap = document.getElementById(wrapId);
-    var requiredFields = (requiredFieldIds || []).map(function (id) { return document.getElementById(id); });
-    document.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
-      r.addEventListener('change', function () {
-        var visible = r.checked && r.value === showValue;
-        wrap.classList.toggle('show', visible);
-        requiredFields.forEach(function (field) {
-          field.required = visible;
-          // Clear the answer when the panel is hidden, so a value typed before
-          // the delegate changed their mind is never submitted.
-          if (!visible) field.value = '';
-        });
-      });
-    });
-  }
-  wireConditional('naomsMember', 'Yes', 'memberIdWrap', ['memberId']);
-  wireConditional('accommodation', 'Yes', 'accWrap', ['accRooms', 'accType']);
-  wireConditional('accompanying', 'Yes', 'acpWrap', ['acpCount']);
+  // ---- Recommendation letter: only for Residents / Dental Surgeons / Students ----
+  // The upload card is hidden and not required for any other designation, so
+  // the delegate is never blocked by a field they cannot see.
+  (function () {
+    var select = document.getElementById('designation');
+    var wrap   = document.getElementById('recLetterWrap');
+    var file   = document.getElementById('idFile');
+    var chosen = document.getElementById('idChosen');
+    function sync() {
+      var show = select.value === 'Resident/Dental Surgeons/Students';
+      wrap.hidden = !show;
+      file.required = show;
+      if (!show) {
+        file.value = '';
+        chosen.classList.remove('show');
+      }
+    }
+    select.addEventListener('change', sync);
+    sync();
+  })();
 
   // ---- Submit handler: client-side validation, then submit to the server ----
   (function () {

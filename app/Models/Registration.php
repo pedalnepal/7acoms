@@ -26,9 +26,8 @@ class Registration extends Model
 
     protected $fillable = [
         'reg_date', 'full_name', 'email', 'phone', 'designation', 'workplace',
-        'id_card_name', 'id_card_path', 'nationality', 'naoms_member', 'member_id',
-        'reg_for', 'accommodation', 'acc_rooms', 'acc_type', 'accompanying', 'acp_count',
-        'category', 'receipt_name', 'receipt_path', 'others', 'status',
+        'recommendation_letter_name', 'recommendation_letter_path', 'nationality', 'naoms_member',
+        'reg_for', 'category', 'receipt_name', 'receipt_path', 'others', 'status',
         'payment_reference', 'payment_status', 'amount', 'currency', 'fee_tier',
         'fee_breakdown', 'charge_amount', 'charge_currency', 'fx_rate', 'fx_rate_date',
         'paid_at',

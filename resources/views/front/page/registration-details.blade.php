@@ -137,7 +137,6 @@
       <ul class="dot-list">
         <li>The applicable fee is determined by the <strong>date payment is received</strong>, not the date the form is submitted.</li>
         <li><strong>Residents and dental surgeons</strong> must upload proof of current training or registration status to qualify for the concessional rate.</li>
-        <li><strong>NAOMS members</strong> must hold valid membership for the current year to claim the member rate.</li>
         <li>Presenting authors of accepted abstracts must be registered for their work to be included in the scientific programme.</li>
         <li>Spot registration is subject to <strong>availability of seats</strong> at the venue.</li>
       </ul>

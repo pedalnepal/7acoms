@@ -23,7 +23,7 @@ class RegistrationSubmitted extends Mailable
         $mail = $this->subject('New Registration — ' . $this->registration->full_name)
                      ->markdown('emails.registration-submitted');
 
-        foreach ([$this->registration->id_card_path, $this->registration->receipt_path] as $path) {
+        foreach ([$this->registration->recommendation_letter_path, $this->registration->receipt_path] as $path) {
             if ($path && file_exists(public_path($path))) {
                 $mail->attach(public_path($path));
             }
