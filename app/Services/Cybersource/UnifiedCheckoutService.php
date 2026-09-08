@@ -353,12 +353,21 @@ class UnifiedCheckoutService
     }
 
     /**
-     * Every origin that may host the SDK.
+     * The single origin that hosts the SDK for this page load.
      *
-     * The gateway rejects the whole session unless each origin uses https and
-     * names a fully qualified domain — "localhost" and bare http are refused.
-     * Checking here turns an opaque gateway validation error into a message
-     * that says what to fix.
+     * The SDK requires every declared origin to be one it is actually running
+     * on: it compares the list against the page's own origin plus its iframe
+     * ancestors, and throws UNUSED_TARGET_ORIGINS naming any entry that is
+     * left over. A top-level checkout page therefore has exactly one usable
+     * origin, so listing both www and apex breaks *every* load rather than
+     * covering both — Firefox, which has no ancestorOrigins to compare
+     * against, rejects a list longer than the frame depth outright.
+     *
+     * CYBS_TARGET_ORIGINS is consequently the set of origins the site may be
+     * served from, and this picks the one in use. Matching on host rather than
+     * the whole origin keeps that working behind a TLS-terminating proxy,
+     * where the request looks like plain http while the browser is on https;
+     * the configured entry — already validated as https — is what is sent.
      *
      * @return array<int, string>
      *
@@ -399,7 +408,44 @@ class UnifiedCheckoutService
             }
         }
 
-        return $origins;
+        return [$this->originForCurrentRequest($origins)];
+    }
+
+    /**
+     * The configured origin the browser is on, or the first one otherwise.
+     *
+     * A host that is served but never configured is the one failure this
+     * cannot fix — the session is built for somewhere the delegate is not —
+     * so it is logged by name rather than left to surface in the browser as an
+     * unexplained UNUSED_TARGET_ORIGINS.
+     *
+     * @param  array<int, string>  $origins
+     */
+    private function originForCurrentRequest(array $origins): string
+    {
+        $host = strtolower((string) request()->getHttpHost());
+
+        foreach ($origins as $origin) {
+            $parts      = parse_url($origin);
+            $configured = strtolower((string) ($parts['host'] ?? ''));
+
+            if (! empty($parts['port'])) {
+                $configured .= ':' . $parts['port'];
+            }
+
+            if ($configured !== '' && $configured === $host) {
+                return $origin;
+            }
+        }
+
+        if ($host !== '') {
+            Log::warning('Checkout page served from an unconfigured host; the payment session will not verify.', [
+                'host'       => $host,
+                'configured' => $origins,
+            ]);
+        }
+
+        return $origins[0];
     }
 
     /**

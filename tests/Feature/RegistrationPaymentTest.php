@@ -608,6 +608,48 @@ class RegistrationPaymentTest extends TestCase
         });
     }
 
+    /**
+     * The SDK checks the declared origins against the ones it is running on and
+     * throws UNUSED_TARGET_ORIGINS over any that are left over, so a session
+     * naming both www and apex fails on whichever host the delegate is not on.
+     * Only the origin serving the page may be declared.
+     */
+    public function test_only_the_origin_serving_the_page_is_declared(): void
+    {
+        Http::fake(['*/uc/v1/sessions' => Http::response($this->fakeCaptureContext(), 201)]);
+        config(['cybersource.target_origins' => [
+            'https://acoms2027.org.np',
+            'https://www.acoms2027.org.np',
+        ]]);
+
+        $this->get('https://www.acoms2027.org.np/registration-payment/'
+            . $this->registration()->payment_reference)->assertOk();
+
+        Http::assertSent(function ($request) {
+            return json_decode($request->body(), true)['targetOrigins']
+                === ['https://www.acoms2027.org.np'];
+        });
+    }
+
+    /**
+     * A proxy that terminates TLS leaves the request looking like plain http,
+     * which must not stop the host being recognised — the configured https
+     * origin is what gets sent either way.
+     */
+    public function test_the_serving_origin_is_matched_by_host_not_by_scheme(): void
+    {
+        Http::fake(['*/uc/v1/sessions' => Http::response($this->fakeCaptureContext(), 201)]);
+        config(['cybersource.target_origins' => ['https://acoms2027.org.np']]);
+
+        $this->get('http://acoms2027.org.np/registration-payment/'
+            . $this->registration()->payment_reference)->assertOk();
+
+        Http::assertSent(function ($request) {
+            return json_decode($request->body(), true)['targetOrigins']
+                === ['https://acoms2027.org.np'];
+        });
+    }
+
     public function test_an_unknown_payment_reference_is_not_found(): void
     {
         $this->get(route('registration.payment', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'))

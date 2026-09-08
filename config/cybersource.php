@@ -39,7 +39,10 @@ return [
     |
     */
 
-    // Every origin that will host the SDK. Production origins must be https.
+    // Every origin the checkout page may be served from -- www and apex both,
+    // where both answer. The capture context carries only the one in use, since
+    // the SDK refuses a session listing an origin it is not running on.
+    // Production origins must be https.
     // Comma-separated in .env; falls back to APP_URL's origin.
     'target_origins' => array_values(array_filter(array_map(
         'trim',
