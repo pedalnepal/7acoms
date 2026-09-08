@@ -7,14 +7,44 @@ use App\Models\Registration;
 
 class RegistrationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (isset($_GET['trashed'])) {
-            $registrations = Registration::orderBy('deleted_at', 'desc')->onlyTrashed()->paginate(50);
-        } else {
-            $registrations = Registration::orderBy('id', 'desc')->paginate(50);
+        $search  = trim((string) $request->query('q', ''));
+        $status  = (string) $request->query('status', '');
+        $trashed = $request->has('trashed');
+
+        $query = $trashed
+            ? Registration::onlyTrashed()->orderBy('deleted_at', 'desc')
+            : Registration::orderBy('id', 'desc');
+
+        if ($status !== '') {
+            $query->where('payment_status', $status);
         }
-        return view('admin.registration.list', ['registrations' => $registrations, 'title' => 'Registrations']);
+
+        if ($search !== '') {
+            $query->where(function ($inner) use ($search) {
+                $inner->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+
+                // The reference shown in the list (e.g. ACOMS-000123) is
+                // derived from the id rather than stored, so a search for it
+                // has to be turned back into an id to match anything.
+                if (preg_match('/(\d+)/', $search, $matches)) {
+                    $inner->orWhere('id', (int) $matches[1]);
+                }
+            });
+        }
+
+        $registrations = $query->paginate(10)->withQueryString();
+
+        return view('admin.registration.list', [
+            'registrations' => $registrations,
+            'title'         => 'Registrations',
+            'search'        => $search,
+            'status'        => $status,
+            'trashed'       => $trashed,
+        ]);
     }
 
     public function show($id)
