@@ -7,14 +7,37 @@ use App\Models\AbstractSubmission;
 
 class AbstractController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (isset($_GET['trashed'])) {
-            $abstracts = AbstractSubmission::orderBy('deleted_at', 'desc')->onlyTrashed()->paginate(50);
-        } else {
-            $abstracts = AbstractSubmission::orderBy('id', 'desc')->paginate(50);
+        $search  = trim((string) $request->query('q', ''));
+        $type    = (string) $request->query('type', '');
+        $trashed = $request->has('trashed');
+
+        $query = $trashed
+            ? AbstractSubmission::onlyTrashed()->orderBy('deleted_at', 'desc')
+            : AbstractSubmission::orderBy('id', 'desc');
+
+        if ($type !== '') {
+            $query->where('pres_type', $type);
         }
-        return view('admin.abstract.list', ['abstracts' => $abstracts, 'title' => 'Abstract Submissions']);
+
+        if ($search !== '') {
+            $query->where(function ($inner) use ($search) {
+                $inner->where('title', 'like', "%{$search}%")
+                    ->orWhere('presenting_author', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $abstracts = $query->paginate(10)->withQueryString();
+
+        return view('admin.abstract.list', [
+            'abstracts' => $abstracts,
+            'title'     => 'Abstract Submissions',
+            'search'    => $search,
+            'type'      => $type,
+            'trashed'   => $trashed,
+        ]);
     }
 
     public function show($id)
