@@ -37,7 +37,12 @@
       font-size: 0.83rem;
       font-weight: 500;
       color: var(--text) !important;
-      padding: 1.1rem 0.7rem !important;
+      /* Nine top-level items (admin-editable, so this can only grow) need
+         close to the full 1400px xxl breakpoint just to fit in one row —
+         trimmed from 0.7rem so there is real margin rather than a handful of
+         pixels, and the row doesn't start clipping again the moment a label
+         is edited to something longer. */
+      padding: 1.1rem 0.55rem !important;
       white-space: nowrap;
     }
     .navbar .nav-link:hover { color: var(--red) !important; }

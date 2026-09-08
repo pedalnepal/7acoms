@@ -2,7 +2,7 @@
 <!-- ============================================================
      NAVBAR
 ============================================================ -->
-<nav class="navbar navbar-expand-lg">
+<nav class="navbar navbar-expand-xxl">
   <div class="container">
 
     <!-- LOGO -->
@@ -10,15 +10,22 @@
       <img src="{{ asset('images/logo/7th-acoms-mnemonic.svg') }}" alt="7th ACOMS Trainee Conference">
     </a>
 
-    <!-- Offcanvas toggle (mobile) -->
+    <!-- Offcanvas toggle: below xxl, since the nine top-level items (the menu
+         is admin-editable, so this can only grow) need close to 1400px of
+         row width and overflow the container well before Bootstrap's lg
+         (992px) or even xl (1200px) breakpoint — confirmed on-screen at
+         1366×768, the most common laptop resolution, where the row ran off
+         the right edge and hid the Registration button entirely. xxl is the
+         widest breakpoint Bootstrap ships, so this is as far as it can be
+         pushed without a custom one. -->
     <button class="navbar-toggler border-0 shadow-none" type="button"
       data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Desktop nav (lg+) -->
-    <div class="justify-content-end d-none d-lg-flex" id="mainNav">
-      <ul class="navbar-nav align-items-lg-center">
+    <!-- Desktop nav (xxl+) -->
+    <div class="justify-content-end d-none d-xxl-flex" id="mainNav">
+      <ul class="navbar-nav align-items-xxl-center">
         {!!\App\Models\Menu::getMenu(1)!!}
         <li class="nav-item">
           <a class="nav-link nav-btn-reg" href="{{ route('registration.details') }}">
