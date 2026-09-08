@@ -18,6 +18,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Payment Ref</th>
                             <th>Full Name</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -41,6 +42,7 @@
                         @php $i++; @endphp
                         <tr>
                             <th scope="row">{{$i}}</th>
+                            <td>{{$registration->paymentCode()}}</td>
                             <td>{{$registration->full_name}}</td>
                             <td>{{$registration->email}}</td>
                             <td>{{$registration->phone}}</td>
@@ -83,7 +85,7 @@
                         @endforeach
                         @else
                         <tr>
-                            <td colspan="9"><center>No Registrations Found</center></td>
+                            <td colspan="10"><center>No Registrations Found</center></td>
                         </tr>
                         @endif
                     </tbody>
