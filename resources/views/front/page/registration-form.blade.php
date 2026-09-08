@@ -223,9 +223,13 @@
                added to config/registration.php appears here without an edit. --}}
           <div class="cat-group" id="catGroup">
             @foreach($categoryFees as $catName => $catRate)
-              <div class="cat-opt" data-category="{{ $catName }}">
+              <div class="cat-opt flex-fill" data-category="{{ $catName }}">
                 <input type="radio" id="cat-{{ $loop->iteration }}" name="category" value="{{ $catName }}" required>
-                <label for="cat-{{ $loop->iteration }}">{{ $catName }} <span class="cat-fee">{{ $catFee($catName) }}</span></label>
+                {{-- The name is wrapped so it is a flex item that can shrink:
+                     as a bare text node it takes its full width and pushes the
+                     fee onto a line of its own, which makes the card far taller
+                     than it needs to be on a narrow screen. --}}
+                <label for="cat-{{ $loop->iteration }}"><span class="cat-name">{{ $catName }}</span> <span class="cat-fee">{{ $catFee($catName) }}</span></label>
               </div>
             @endforeach
           </div>

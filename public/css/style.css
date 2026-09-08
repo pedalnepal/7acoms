@@ -942,8 +942,13 @@
     }
 
     /* radio card group (registration category) */
-    .cat-group { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
-    .cat-opt { position: relative; }
+    .cat-group { display: flex; flex-wrap: wrap; gap: .8rem; }
+    /* Three across: the form narrows the list to the three categories that
+       match the delegate's nationality and membership, so they land on one
+       row. The basis is the row minus its two gaps, split three ways. It must
+       not grow: without JavaScript every category renders, and a row left
+       holding one card would stretch it to the full width of three. */
+    .cat-opt { position: relative; flex: 0 1 calc((100% - 1.6rem) / 3); min-width: 0; }
     .cat-opt input { position: absolute; opacity: 0; }
     .cat-opt label {
       display: flex;
@@ -980,6 +985,9 @@
     .cat-opt input:focus-visible + label {
       box-shadow: 0 0 0 .18rem rgba(173,0,41,.12);
     }
+    /* Shrinkable, so the name wraps inside its own box and the fee stays on
+       the first line instead of being pushed below it. */
+    .cat-opt .cat-name { flex: 1 1 auto; min-width: 0; }
     .cat-opt .cat-fee { margin-left: auto; font-size: .78rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
 
     /* conditional reveal panel */
@@ -1124,6 +1132,10 @@
       .committee-name { font-size: .85rem; }
       .committee-email { font-size: .66rem; }
       .committee-name-box { padding: .7rem .5rem; }
+
+      /* Registration categories: two across once a third of the row is too
+         narrow for the longer category names. */
+      .cat-opt { flex-basis: calc((100% - .8rem) / 2); }
     }
 
     /* Mobile (≤767px) */
@@ -1160,6 +1172,9 @@
       .content-block { margin-bottom: 2.5rem; }
       .sec-head { gap: .8rem; }
       .sec-head h2 { white-space: normal; }
+
+      /* Registration categories — full width on mobile */
+      .cat-opt { flex-basis: 100%; }
 
       /* Expect cards — 1 column on small mobile */
       .section-expect .col-6 { width: 50%; }
