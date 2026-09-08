@@ -209,35 +209,25 @@
             $catFee = fn (string $name) => $categoryFees[$name]['currency'] . ' ' . number_format($categoryFees[$name]['amount']);
           @endphp
           <label class="form-label d-block">Registration Category <span class="req">*</span></label>
-          <div class="cat-group">
-            <div class="cat-opt">
-              <input type="radio" id="cat-1" name="category" value="NAOMS Member" required>
-              <label for="cat-1">NAOMS Member <span class="cat-fee">{{ $catFee('NAOMS Member') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-2" name="category" value="Non-NAOMS Member (Nepalese)">
-              <label for="cat-2">Non-NAOMS Member (Nepalese) <span class="cat-fee">{{ $catFee('Non-NAOMS Member (Nepalese)') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-3" name="category" value="International Delegate">
-              <label for="cat-3">International Delegate <span class="cat-fee">{{ $catFee('International Delegate') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-4" name="category" value="Residents and Dental Surgeons (Nepalese)">
-              <label for="cat-4">Residents and Dental Surgeons (Nepalese) <span class="cat-fee">{{ $catFee('Residents and Dental Surgeons (Nepalese)') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-5" name="category" value="Residents and Dental Surgeons (International)">
-              <label for="cat-5">Residents and Dental Surgeons (International) <span class="cat-fee">{{ $catFee('Residents and Dental Surgeons (International)') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-6" name="category" value="Accompanying Person">
-              <label for="cat-6">Accompanying Person <span class="cat-fee">{{ $catFee('Accompanying Person') }}</span></label>
-            </div>
-            <div class="cat-opt">
-              <input type="radio" id="cat-7" name="category" value="Accompanying Person (International)">
-              <label for="cat-7">Accompanying Person (International) <span class="cat-fee">{{ $catFee('Accompanying Person (International)') }}</span></label>
-            </div>
+
+          {{-- Shown until the nationality and membership above are answered,
+               since which categories apply — and what they cost — follows from
+               those two answers. --}}
+          <p class="field-hint" id="catPrompt" hidden>
+            <i class="fa-solid fa-circle-info me-1"></i>
+            Choose your <strong>nationality</strong> and <strong>NAOMS membership</strong> above to see the
+            categories and fees that apply to you.
+          </p>
+
+          {{-- Rendered from the same config the fees come from, so a category
+               added to config/registration.php appears here without an edit. --}}
+          <div class="cat-group" id="catGroup">
+            @foreach($categoryFees as $catName => $catRate)
+              <div class="cat-opt" data-category="{{ $catName }}">
+                <input type="radio" id="cat-{{ $loop->iteration }}" name="category" value="{{ $catName }}" required>
+                <label for="cat-{{ $loop->iteration }}">{{ $catName }} <span class="cat-fee">{{ $catFee($catName) }}</span></label>
+              </div>
+            @endforeach
           </div>
           <p class="field-hint"><i class="fa-solid fa-circle-info me-1"></i>Fees rise at each deadline. See the full fee table on the <a href="{{url('registration-details')}}" style="color:var(--red);">registration details</a> page.</p>
 
@@ -354,6 +344,54 @@
       }
     }
     select.addEventListener('change', sync);
+    sync();
+  })();
+
+  // ---- Registration category: only the ones the delegate is eligible for ----
+  // Nationality picks the pricing group (the Nepalese rates are NPR, the
+  // international ones USD); NAOMS membership only separates the two Nepalese
+  // delegate rates. Ineligible options are disabled as well as hidden, so a
+  // category the delegate was never shown cannot be submitted — the same map
+  // is enforced again in registrationStore().
+  //
+  // Everything renders visible and enabled, and this narrows it on load, so
+  // the form still works without JavaScript.
+  (function () {
+    var eligibility = @json($categoryEligibility);
+    var group  = document.getElementById('catGroup');
+    var prompt = document.getElementById('catPrompt');
+    var opts   = Array.prototype.slice.call(group.querySelectorAll('.cat-opt'));
+
+    function answer(name) {
+      var checked = document.querySelector('input[name="' + name + '"]:checked');
+      return checked ? checked.value : '';
+    }
+
+    function sync() {
+      var allowed = (eligibility[answer('nationality')] || {})[answer('naomsMember')] || null;
+
+      group.hidden  = !allowed;
+      prompt.hidden = !!allowed;
+
+      opts.forEach(function (opt) {
+        var input = opt.querySelector('input[type="radio"]');
+        var show  = !!allowed && allowed.indexOf(opt.dataset.category) !== -1;
+
+        opt.hidden     = !show;
+        input.disabled = !show;
+
+        // A category that no longer applies must not stay selected: the fee
+        // would no longer match what the delegate is telling us they are.
+        if (!show) input.checked = false;
+      });
+    }
+
+    ['nationality', 'naomsMember'].forEach(function (name) {
+      document.querySelectorAll('input[name="' + name + '"]').forEach(function (radio) {
+        radio.addEventListener('change', sync);
+      });
+    });
+
     sync();
   })();
 

@@ -59,6 +59,55 @@ return [
 
     /*
     |----------------------------------------------------------------------
+    | Category eligibility
+    |----------------------------------------------------------------------
+    |
+    | Which of the categories above a delegate may choose, by the nationality
+    | and NAOMS membership they declared. Nationality decides the pricing
+    | group, since the Nepalese rates are quoted in NPR and the international
+    | ones in USD; membership only separates the two Nepalese delegate rates,
+    | which is the single place the fee table distinguishes members.
+    |
+    | The registration form offers exactly this list and the store request
+    | validates against it, so a category the delegate was never shown cannot
+    | be posted at a rate that does not apply to them.
+    |
+    */
+
+    'eligibility' => [
+        'Nepali' => [
+            'Yes' => [
+                'NAOMS Member',
+                'Residents and Dental Surgeons (Nepalese)',
+                'Accompanying Person',
+            ],
+            'No' => [
+                'Non-NAOMS Member (Nepalese)',
+                'Residents and Dental Surgeons (Nepalese)',
+                'Accompanying Person',
+            ],
+        ],
+
+        // The fee table prices international delegates the same either way —
+        // it has no international member rate — so membership changes nothing
+        // here. Give it its own entry rather than a fallback, so adding one
+        // later is an edit in this file and nothing else.
+        'International' => [
+            'Yes' => [
+                'International Delegate',
+                'Residents and Dental Surgeons (International)',
+                'Accompanying Person (International)',
+            ],
+            'No' => [
+                'International Delegate',
+                'Residents and Dental Surgeons (International)',
+                'Accompanying Person (International)',
+            ],
+        ],
+    ],
+
+    /*
+    |----------------------------------------------------------------------
     | Add-ons
     |----------------------------------------------------------------------
     |

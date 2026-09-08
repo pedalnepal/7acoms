@@ -292,6 +292,10 @@ class FrontController extends Controller
             // config/registration.php, so this moves with the config and the
             // calendar instead of being typed in once and going stale.
             'categoryFees'     => $fees->currentCategoryFees(),
+            // Which categories each nationality / membership answer may pick.
+            // The form filters its options with this; registrationStore()
+            // validates against the same map.
+            'categoryEligibility' => config('registration.eligibility'),
         ];
 
         return view('front.page.registration-form', $data);
@@ -304,6 +308,14 @@ class FrontController extends Controller
         // fee calculator.
         $categories   = array_keys(config('registration.categories'));
         $designations = ['Resident/Dental Surgeons/Students', 'Consultant/Faculty', 'Accompanying Person'];
+
+        // The form only offers the categories that match the declared
+        // nationality and membership, so accept only those — otherwise an
+        // international delegate could post a Nepalese rate the form never
+        // showed them. An unrecognised pair falls back to the full list and is
+        // rejected by the nationality / naomsMember rules instead.
+        $eligible = config('registration.eligibility')[$request->input('nationality')][$request->input('naomsMember')]
+            ?? $categories;
 
         $request->validate([
             'date'          => 'nullable|date',
@@ -318,7 +330,7 @@ class FrontController extends Controller
             'nationality'   => ['required', \Illuminate\Validation\Rule::in(['Nepali', 'International'])],
             'naomsMember'   => ['required', \Illuminate\Validation\Rule::in(['Yes', 'No'])],
             'regFor'        => ['required', \Illuminate\Validation\Rule::in(['Conference', 'Conference + Hands-on Course', 'Conference + Master Class', 'Conference + Hands-on Course + Master Class'])],
-            'category'      => ['required', \Illuminate\Validation\Rule::in($categories)],
+            'category'      => ['required', \Illuminate\Validation\Rule::in($eligible)],
             'paymentReceipt'=> 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'others'        => 'nullable|string|max:2000',
         ], [
@@ -329,7 +341,7 @@ class FrontController extends Controller
             'paymentReceipt.mimes' => 'The payment receipt must be a JPG, PNG or PDF file.',
             'paymentReceipt.max'   => 'The payment receipt may not be larger than 4 MB.',
             'category.required'    => 'Please choose the registration category that applies to you.',
-            'category.in'          => 'Please choose the registration category that applies to you.',
+            'category.in'          => 'Please choose a registration category that matches the nationality and NAOMS membership you selected.',
         ]);
 
         $reg = new \App\Models\Registration;
