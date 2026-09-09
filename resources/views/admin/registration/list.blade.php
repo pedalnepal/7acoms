@@ -97,12 +97,26 @@
                                     ][$registration->payment_status] ?? 'secondary';
                                 @endphp
                                 <span class="badge bg-{{ $badge }}">{{ ucfirst($registration->payment_status ?? 'unpaid') }}</span>
+                                @if(!$trashed)
+                                    <button type="button"
+                                            class="btn btn-link btn-sm p-0 ms-1 align-baseline js-payment-status"
+                                            data-action="{{ route('registration.payment_status', $registration->id) }}"
+                                            data-code="{{ $registration->paymentCode() }}"
+                                            data-name="{{ $registration->full_name }}"
+                                            data-status="{{ $registration->payment_status ?? 'unpaid' }}"
+                                            data-remarks="{{ $registration->payment_remarks }}">Change</button>
+                                @endif
                                 @if($registration->amount)
                                     <div class="small text-muted">
                                         {{ $registration->formattedAmount() }}
                                         @if($registration->isConverted())
                                             <span title="Charged in the currency the bank settles">({{ $registration->formattedChargeAmount() }})</span>
                                         @endif
+                                    </div>
+                                @endif
+                                @if($registration->payment_remarks)
+                                    <div class="small text-muted" title="{{ $registration->payment_remarks }}">
+                                        {{ \Illuminate\Support\Str::limit($registration->payment_remarks, 40) }}
                                     </div>
                                 @endif
                             </td>
@@ -114,12 +128,13 @@
                                         @csrf
                                         <button type="submit" class="btn waves-effect waves-light btn-sm btn-success">Restore</button>
                                     </form>
+                                @else
+                                    <form action="{{ route('registration.destroy', $registration->id) }}" method="post" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn waves-effect waves-light btn-sm btn-danger">Trash</button>
+                                    </form>
                                 @endif
-                                <form action="{{ route('registration.destroy', $registration->id) }}" method="post" class="d-inline" onsubmit="return confirm('Are you sure?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn waves-effect waves-light btn-sm btn-danger">{{ $trashed ? 'Delete Permanently' : 'Trash' }}</button>
-                                </form>
                             </td>
                         </tr>
                     @empty
@@ -140,4 +155,82 @@
 
     <div class="footer text-center card-footer admin-pagination border-0">{{ $registrations->links() }}</div>
 </div>
+
+@unless($trashed)
+<div class="modal fade" id="PaymentStatusModal" tabindex="-1" aria-labelledby="PaymentStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="post" action="" id="PaymentStatusForm">
+            @csrf
+            <input type="hidden" name="back" value="{{ request()->fullUrl() }}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="PaymentStatusModalLabel">Update Payment Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3 small text-muted" id="PaymentStatusFor"></p>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="PaymentStatusSelect">Payment Status</label>
+                        <select class="form-select" name="payment_status" id="PaymentStatusSelect" required>
+                            <option value="paid">Paid</option>
+                            <option value="unpaid">Unpaid</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label" for="PaymentStatusRemarks">Remarks <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="payment_remarks" id="PaymentStatusRemarks" rows="3"
+                                  maxlength="1000" required
+                                  placeholder="Why is this being changed? e.g. bank transfer received on 05 Sep, ref 12345"></textarea>
+                        <div class="form-text">Recorded against the registration with your name and the time.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endunless
 @stop
+
+@unless($trashed)
+@push('scripts')
+<script>
+    (function () {
+        var modalEl = document.getElementById('PaymentStatusModal');
+        if (!modalEl) {
+            return;
+        }
+
+        var form    = document.getElementById('PaymentStatusForm');
+        var select  = document.getElementById('PaymentStatusSelect');
+        var remarks = document.getElementById('PaymentStatusRemarks');
+        var forLine = document.getElementById('PaymentStatusFor');
+        var modal   = new bootstrap.Modal(modalEl);
+
+        document.querySelectorAll('.js-payment-status').forEach(function (button) {
+            button.addEventListener('click', function () {
+                form.action  = button.dataset.action;
+                forLine.textContent = button.dataset.code + ' — ' + button.dataset.name;
+                remarks.value = button.dataset.remarks || '';
+
+                // A gateway-owned status (pending, failed) is not one of the
+                // two options, so default those to Paid rather than leave the
+                // select showing something the row is not.
+                select.value = button.dataset.status === 'unpaid' ? 'unpaid' : 'paid';
+
+                modal.show();
+            });
+        });
+
+        modalEl.addEventListener('shown.bs.modal', function () {
+            remarks.focus();
+        });
+    })();
+</script>
+@endpush
+@endunless

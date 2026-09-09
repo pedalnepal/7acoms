@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -30,7 +31,7 @@ class Registration extends Model
         'reg_for', 'category', 'receipt_name', 'receipt_path', 'others', 'status',
         'payment_reference', 'payment_status', 'amount', 'currency', 'fee_tier',
         'fee_breakdown', 'charge_amount', 'charge_currency', 'fx_rate', 'fx_rate_date',
-        'paid_at',
+        'paid_at', 'payment_remarks', 'payment_status_updated_by', 'payment_status_updated_at',
     ];
 
     protected $dates = ['deleted_at'];
@@ -38,6 +39,7 @@ class Registration extends Model
     protected $casts = [
         'fee_breakdown' => 'array',
         'paid_at'       => 'datetime',
+        'payment_status_updated_at' => 'datetime',
         'amount'        => 'decimal:2',
         'charge_amount' => 'decimal:2',
         'fx_rate'       => 'decimal:6',
@@ -47,6 +49,12 @@ class Registration extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(PaymentTransaction::class);
+    }
+
+    /** The admin who last set the payment status by hand, if anyone did. */
+    public function paymentStatusUpdatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'payment_status_updated_by');
     }
 
     public function isPaid(): bool

@@ -74,21 +74,68 @@ class RegistrationController extends Controller
         return redirect(route('registration.index') . '?trashed');
     }
 
+    /**
+     * Set the payment status by hand. Only the two settled outcomes are
+     * offered: paid, for money taken outside the gateway (bank transfer, cash
+     * at the desk), and unpaid, to undo one. Gateway-owned states — pending
+     * and failed — are left to the gateway, and a remark is required so the
+     * override is never anonymous.
+     */
+    public function updatePaymentStatus(Request $request, $id)
+    {
+        $data = $request->validate([
+            'payment_status'  => 'required|in:' . Registration::PAYMENT_PAID . ',' . Registration::PAYMENT_UNPAID,
+            'payment_remarks' => 'required|string|max:1000',
+        ]);
+
+        $registration = Registration::withTrashed()->findOrFail($id);
+
+        if ($registration->trashed()) {
+            \Session::flash('error_message', 'Payment status cannot be changed on a trashed registration.');
+            return redirect($this->backTo($request));
+        }
+
+        $registration->payment_status = $data['payment_status'];
+        $registration->payment_remarks = $data['payment_remarks'];
+        $registration->payment_status_updated_by = \Auth::id();
+        $registration->payment_status_updated_at = now();
+
+        // paid_at is what the receipt and the reports read, so it has to follow
+        // the status rather than keep a stale timestamp from a failed attempt.
+        if ($data['payment_status'] === Registration::PAYMENT_PAID) {
+            $registration->paid_at = $registration->paid_at ?: now();
+        } else {
+            $registration->paid_at = null;
+        }
+
+        $registration->save();
+
+        \Session::flash('success_message', 'Payment status updated to ' . ucfirst($data['payment_status']) . '.');
+        return redirect($this->backTo($request));
+    }
+
+    /**
+     * Return to the list the admin was looking at, so the filter, search and
+     * page they were on survive the update.
+     */
+    private function backTo(Request $request): string
+    {
+        $back = (string) $request->input('back', '');
+
+        return $back !== '' && str_starts_with($back, route('registration.index'))
+            ? $back
+            : route('registration.index');
+    }
+
     public function destroy($id)
     {
         $registration = Registration::withTrashed()->findOrFail($id);
         if ($registration->trashed()) {
-            foreach ([$registration->recommendation_letter_path, $registration->receipt_path] as $p) {
-                if ($p && file_exists(public_path($p))) {
-                    @unlink(public_path($p));
-                }
-            }
-            $registration->forceDelete();
-            \Session::flash('success_message', 'Registration permanently deleted.');
-        } else {
-            $registration->delete();
-            \Session::flash('success_message', 'Registration successfully moved to trash.');
+            \Session::flash('error_message', 'Trashed registrations cannot be deleted permanently.');
+            return redirect(route('registration.index') . '?trashed');
         }
+        $registration->delete();
+        \Session::flash('success_message', 'Registration successfully moved to trash.');
         return redirect(route('registration.index'));
     }
 }

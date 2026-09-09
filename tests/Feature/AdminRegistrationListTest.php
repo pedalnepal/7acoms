@@ -117,4 +117,149 @@ class AdminRegistrationListTest extends TestCase
     {
         $this->get(route('registration.index'))->assertRedirect(route('login'));
     }
+
+    public function test_the_list_offers_a_payment_status_control_except_on_trashed_rows(): void
+    {
+        $registration = $this->registration();
+
+        $this->actingAs($this->admin(), 'web')
+            ->get(route('registration.index'))
+            ->assertOk()
+            ->assertSee('Update Payment Status')
+            ->assertSee(route('registration.payment_status', $registration->id));
+
+        $registration->delete();
+
+        $this->actingAs($this->admin(), 'web')
+            ->get(route('registration.index') . '?trashed')
+            ->assertOk()
+            ->assertDontSee('Update Payment Status')
+            ->assertDontSee(route('registration.payment_status', $registration->id));
+    }
+
+    public function test_an_unpaid_registration_can_be_marked_paid_with_remarks(): void
+    {
+        $registration = $this->registration();
+        $admin        = $this->admin();
+
+        $this->actingAs($admin, 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PAID,
+                'payment_remarks' => 'Bank transfer received 05 Sep, ref 12345.',
+            ])
+            ->assertRedirect(route('registration.index'));
+
+        $registration->refresh();
+
+        $this->assertSame(Registration::PAYMENT_PAID, $registration->payment_status);
+        $this->assertSame('Bank transfer received 05 Sep, ref 12345.', $registration->payment_remarks);
+        $this->assertSame($admin->id, $registration->payment_status_updated_by);
+        $this->assertNotNull($registration->payment_status_updated_at);
+        $this->assertNotNull($registration->paid_at);
+    }
+
+    public function test_marking_a_paid_registration_unpaid_clears_the_paid_timestamp(): void
+    {
+        $registration = $this->registration([
+            'payment_status' => Registration::PAYMENT_PAID,
+            'paid_at'        => now(),
+        ]);
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_UNPAID,
+                'payment_remarks' => 'Charge reversed by the bank.',
+            ])
+            ->assertRedirect(route('registration.index'));
+
+        $registration->refresh();
+
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registration->payment_status);
+        $this->assertNull($registration->paid_at);
+    }
+
+    public function test_the_payment_status_change_requires_remarks(): void
+    {
+        $registration = $this->registration();
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PAID,
+                'payment_remarks' => '',
+            ])
+            ->assertSessionHasErrors('payment_remarks');
+
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registration->refresh()->payment_status);
+    }
+
+    public function test_only_paid_and_unpaid_can_be_set_by_hand(): void
+    {
+        $registration = $this->registration();
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PENDING,
+                'payment_remarks' => 'Trying to fake a gateway state.',
+            ])
+            ->assertSessionHasErrors('payment_status');
+
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registration->refresh()->payment_status);
+    }
+
+    public function test_a_trashed_registration_keeps_its_payment_status(): void
+    {
+        $registration = $this->registration();
+        $registration->delete();
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PAID,
+                'payment_remarks' => 'Should not apply.',
+            ])
+            ->assertRedirect(route('registration.index'));
+
+        $this->assertSame(
+            Registration::PAYMENT_UNPAID,
+            Registration::withTrashed()->find($registration->id)->payment_status
+        );
+    }
+
+    public function test_the_update_returns_to_the_filtered_list_it_came_from(): void
+    {
+        $registration = $this->registration();
+        $back         = route('registration.index', ['status' => Registration::PAYMENT_UNPAID, 'page' => 2]);
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PAID,
+                'payment_remarks' => 'Paid at the desk.',
+                'back'            => $back,
+            ])
+            ->assertRedirect($back);
+    }
+
+    public function test_an_off_site_back_url_is_ignored(): void
+    {
+        $registration = $this->registration();
+
+        $this->actingAs($this->admin(), 'web')
+            ->post(route('registration.payment_status', $registration->id), [
+                'payment_status'  => Registration::PAYMENT_PAID,
+                'payment_remarks' => 'Paid at the desk.',
+                'back'            => 'https://evil.example.com/steal',
+            ])
+            ->assertRedirect(route('registration.index'));
+    }
+
+    public function test_a_guest_cannot_change_a_payment_status(): void
+    {
+        $registration = $this->registration();
+
+        $this->post(route('registration.payment_status', $registration->id), [
+            'payment_status'  => Registration::PAYMENT_PAID,
+            'payment_remarks' => 'Not signed in.',
+        ])->assertRedirect(route('login'));
+
+        $this->assertSame(Registration::PAYMENT_UNPAID, $registration->refresh()->payment_status);
+    }
 }

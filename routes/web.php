@@ -44,6 +44,7 @@ Route::prefix('admin/dashboard')
         Route::get('registration/{id}', ['uses'=>'RegistrationController@show', 'as'=>'registration.admin.show']);
         Route::get('registration/{id}/download/{type}', ['uses'=>'RegistrationController@download', 'as'=>'registration.download']);
         Route::post('registration/{id}/restore', ['uses'=>'RegistrationController@restore', 'as'=>'registration.restore']);
+        Route::post('registration/{id}/payment-status', ['uses'=>'RegistrationController@updatePaymentStatus', 'as'=>'registration.payment_status']);
         Route::delete('registration/{id}', ['uses'=>'RegistrationController@destroy', 'as'=>'registration.destroy']);
 
         // Abstract submissions

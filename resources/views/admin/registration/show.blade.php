@@ -77,6 +77,18 @@
                             </td>
                         </tr>
                         <tr><th>Paid At</th><td>{{$registration->paid_at ? $registration->paid_at->format('d M Y, h:i A') : '—'}}</td></tr>
+                        <tr>
+                            <th>Payment Remarks</th>
+                            <td>
+                                {!! $registration->payment_remarks ? nl2br(e($registration->payment_remarks)) : '<span class="text-muted">—</span>' !!}
+                                @if($registration->payment_status_updated_at)
+                                    <div class="small text-muted">
+                                        Set by {{ optional($registration->paymentStatusUpdatedBy)->name ?? 'an administrator' }}
+                                        on {{ $registration->payment_status_updated_at->format('d M Y, h:i A') }}
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
 
                         @php $transactions = $registration->transactions()->latest('id')->get(); @endphp
                         @if($transactions->isNotEmpty())
