@@ -221,7 +221,18 @@
                 // A gateway-owned status (pending, failed) is not one of the
                 // two options, so default those to Paid rather than leave the
                 // select showing something the row is not.
-                select.value = button.dataset.status === 'unpaid' ? 'unpaid' : 'paid';
+                //
+                // script.js turns every <select> into a Select2 widget on
+                // document-ready, which renders its own box over the native
+                // element. Setting select.value directly leaves that box
+                // showing whatever it started with — jQuery's val()+trigger
+                // is what Select2 listens for to redraw it.
+                var newValue = button.dataset.status === 'unpaid' ? 'unpaid' : 'paid';
+                if (window.jQuery) {
+                    jQuery(select).val(newValue).trigger('change');
+                } else {
+                    select.value = newValue;
+                }
 
                 modal.show();
             });
