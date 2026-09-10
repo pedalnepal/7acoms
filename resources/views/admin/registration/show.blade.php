@@ -5,14 +5,14 @@
     <div class="col-lg-10 col-md-12">
         <div class="card border-3 border-top border-top-primary">
             <div class="card-body">
-                <div class="page-header d-flex justify-content-between align-items-center">
+                <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h2 class="pageheader-title mb-0">Registration Detail</h2>
                     <a class="btn btn-secondary btn-sm" href="{{route('registration.index')}}">&larr; Back to list</a>
                 </div>
 
-                <table class="table table-bordered mt-3">
+                <table class="table table-bordered admin-detail-table mt-3 mb-0">
                     <tbody>
-                        <tr><th style="width:240px;">Date</th><td>{{$registration->reg_date}}</td></tr>
+                        <tr><th>Date</th><td>{{$registration->reg_date}}</td></tr>
                         <tr><th>Full Name</th><td>{{$registration->full_name}}</td></tr>
                         <tr><th>Email</th><td>{{$registration->email}}</td></tr>
                         <tr><th>Phone</th><td>{{$registration->phone}}</td></tr>
@@ -95,7 +95,8 @@
                         <tr>
                             <th>Payment Attempts</th>
                             <td>
-                                <table class="table table-sm table-bordered mb-0">
+                                <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0" style="min-width:640px;">
                                     <thead>
                                         <tr>
                                             <th>When</th>
@@ -132,6 +133,7 @@
                                     @endforeach
                                     </tbody>
                                 </table>
+                                </div>
                             </td>
                         </tr>
                         @endif

@@ -603,3 +603,56 @@ header {
 .select2-dropdown {
   border-color: #ced4da;
 }
+
+/* Admin detail (label / value) tables — e.g. registration & abstract detail */
+.admin-detail-table th {
+  width: 240px;
+  white-space: nowrap;
+}
+.admin-detail-table td {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.admin-detail-table .btn {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+}
+
+@media (max-width: 767.98px) {
+  /* Stack each label above its value, full width. The table / tbody / tr are
+     dropped to block too — otherwise the table-sizing algorithm widens the
+     whole table to fit a nested table inside a cell. Scoped with > so a
+     nested table stays tabular and scrolls in its own .table-responsive. */
+  .admin-detail-table,
+  .admin-detail-table > tbody,
+  .admin-detail-table > tbody > tr,
+  .admin-detail-table > tbody > tr > th,
+  .admin-detail-table > tbody > tr > td {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+  }
+  .admin-detail-table > tbody > tr {
+    border-bottom: 2px solid rgba(22, 61, 6, 0.12);
+  }
+  .admin-detail-table > tbody > tr:last-child {
+    border-bottom: 0;
+  }
+  .admin-detail-table > tbody > tr > th {
+    white-space: normal;
+    border-bottom: 0;
+    padding-bottom: 0.15rem;
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+  }
+  .admin-detail-table > tbody > tr > td {
+    padding-top: 0.15rem;
+    border-top: 0;
+  }
+}
