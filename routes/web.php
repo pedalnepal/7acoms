@@ -1,7 +1,5 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\User\AuthController as UserAuthController;
-use App\Http\Controllers\User\DashboardController;
 
 Route::prefix('admin/dashboard')
     ->middleware(['auth:web'])
@@ -83,6 +81,9 @@ Route::group(['namespace'=>'App\Http\Controllers\Front'], function () {
     Route::post('abstract-submission', 'FrontController@abstractStore')
         ->middleware('throttle:6,1')
         ->name('abstract.store');
+    Route::get('venue-details', 'FrontController@venueDetails')->name('venue.details');
+    Route::get('accommodation', 'FrontController@accommodation')->name('accommodation');
+    Route::get('travel-info', 'FrontController@travelInfo')->name('travel.info');
     Route::get('organizing-committee', 'FrontController@organizingCommittee')->name('organizing.committee');
     Route::get('registration-form', 'FrontController@registrationForm')->name('registration.form');
     Route::post('registration-form', 'FrontController@registrationStore')
@@ -101,53 +102,4 @@ Route::group(['namespace'=>'App\Http\Controllers\Front'], function () {
     // Catch-all — must stay LAST so the specific routes above are reachable.
     Route::get('{permalink}', 'FrontController@pageDetail')->name('page.detail');
 
-});
-
-
-
-Route::prefix('user')->name('user.')->group(function () {
-
-    // Guest routes
-    Route::middleware('guest:customer')->group(function () {
-        Route::get('login', [UserAuthController::class, 'showLogin'])->name('login');
-        Route::post('login', [UserAuthController::class, 'login'])->name('login.submit');
-
-        Route::get('forgot-password', [UserAuthController::class, 'showForgotPassword'])->name('password.request');
-        Route::post('forgot-password', [UserAuthController::class, 'sendResetLink'])->name('password.email');
-
-        Route::get('reset-password/{token}', [UserAuthController::class, 'showResetPassword'])->name('password.reset');
-        Route::post('reset-password', [UserAuthController::class, 'resetPassword'])->name('password.update');
-
-        Route::get('register', [UserAuthController::class, 'showRegister'])->name('register');
-        Route::post('register', [UserAuthController::class, 'register'])->name('register.submit');
-    });
-
- 
-    // Authenticated routes
-    Route::middleware('auth:customer')->group(function () {
-
-        Route::get('email/verify', [UserAuthController::class, 'verificationNotice'])->name('verification.notice');
-
-        Route::get('email/verify/{id}/{hash}', [UserAuthController::class, 'verifyEmail'])
-            ->middleware(['signed', 'throttle:6,1'])
-            ->name('verification.verify');
-
-        Route::post('email/verification-notification', [UserAuthController::class, 'resendVerification'])
-            ->middleware('throttle:6,1')
-            ->name('verification.send');
-
-        Route::post('logout', [UserAuthController::class, 'logout'])->name('logout');
-
-        Route::middleware('verified:user.verification.notice')->group(function () {
-
-            Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-            Route::get('orders', [DashboardController::class, 'orders'])->name('orders');
-            Route::get('orders/{id}', [DashboardController::class, 'showOrder'])->name('orders.show');
-            Route::get('profile', [DashboardController::class, 'profile'])->name('profile');
-            Route::put('profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
-            Route::put('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.password');
-
-        });
-
-    });
 });

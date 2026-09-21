@@ -40,11 +40,6 @@ return [
         'driver' => 'session',
         'provider' => 'users',
     ],
-
-    'customer' => [
-        'driver' => 'session',
-        'provider' => 'customer_users',
-    ],
 ],
 
     /*
@@ -68,10 +63,6 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
-        ],
-        'customer_users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\CustomerUser::class,
         ],
 
         // 'users' => [
@@ -106,13 +97,6 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-        'customer_users' => [
-            'provider' => 'customer_users',
-            'table' => 'password_resets', 
-            'expire' => 60,
-            'throttle' => 60,
-        ],
-
     ],
 
 

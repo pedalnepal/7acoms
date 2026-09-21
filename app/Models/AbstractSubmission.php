@@ -12,7 +12,7 @@ class AbstractSubmission extends Model
     protected $table = 'abstract_submissions';
 
     protected $fillable = [
-        'title', 'authors', 'affiliation', 'presenting_author', 'email', 'designation',
+        'title', 'authors', 'affiliation', 'presenting_author', 'email', 'phone', 'designation',
         'category', 'pres_type', 'research_type', 'pres_category',
         'abstract_body', 'reference_list', 'file_name', 'file_path', 'status',
     ];

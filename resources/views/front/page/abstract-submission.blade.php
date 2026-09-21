@@ -25,7 +25,7 @@
     <div class="content-block">
       <div class="sec-head">
         <span class="sec-bar"></span>
-        <h2>Submit Your Abstract</h2>
+        <h2>Call for Abstracts</h2>
         <span class="sec-line"></span>
       </div>
 
@@ -34,16 +34,10 @@
         committee truly believes that your input is a step towards sharing knowledge and enlightening the empowered
         frontier surgeons of tomorrow.
       </p>
-
-      <!-- Instructions -->
-      <div class="instructions mt-3">
-        <p class="ins-title"><i class="fa-solid fa-circle-info"></i> Please read all instructions before submitting</p>
-        <ul>
-          <li>Complete every required field marked with an asterisk (<span style="color:var(--red)">*</span>).</li>
-          <li>The abstract body should not exceed <strong>300 words</strong>, excluding the title and references.</li>
-          <li>Presentation files may be uploaded once your abstract is accepted (PDF, PPT, or PPTX).</li>
-        </ul>
-      </div>
+      <p class="content-text">
+        Please read the key dates and submission guidelines below before you submit.
+        <a href="#submit-abstract" class="abs-jump">Go to the submission form <i class="fa-solid fa-arrow-down"></i></a>
+      </p>
 
       @if(session('success'))
       <div class="alert alert-success mt-3" role="alert" style="border-left:4px solid #198754;background:#e8f6ee;color:#0f5132;padding:1rem 1.25rem;border-radius:6px;">
@@ -59,8 +53,271 @@
             <li>{{ $error }}</li>
           @endforeach
         </ul>
+        <a href="#submit-abstract" class="abs-jump mt-2 d-inline-block">Go to the form <i class="fa-solid fa-arrow-down"></i></a>
       </div>
       @endif
+    </div>
+
+    <!-- Key dates -->
+    <div class="content-block">
+      <div class="sec-head">
+        <span class="sec-bar"></span>
+        <h2>Key Dates</h2>
+        <span class="sec-line"></span>
+      </div>
+
+      <div class="fee-table-wrap compact-wrap">
+        <table class="fee-table compact-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-cat">Milestone</th>
+              <th scope="col"><i class="fa-solid fa-trophy me-1"></i>Prize Paper / e-Poster</th>
+              <th scope="col">Free Paper / e-Poster</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Last date for abstract submission</th>
+              <td class="is-early">25 October 2026</td>
+              <td>8 November 2026</td>
+            </tr>
+            <tr>
+              <th scope="row">Notification of acceptance</th>
+              <td>After 15 November 2026</td>
+              <td>After 25 November 2026</td>
+            </tr>
+            <tr>
+              <th scope="row">Last date for presentation file upload</th>
+              <td>15 February 2027</td>
+              <td>10 February 2027</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Guidelines -->
+    <div class="content-block">
+      <div class="sec-head">
+        <span class="sec-bar"></span>
+        <h2>Submission Guidelines</h2>
+        <span class="sec-line"></span>
+      </div>
+
+      <div class="accordion abs-guide" id="absGuide">
+
+        <!-- 1 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#g1" aria-expanded="true" aria-controls="g1">
+              <span class="ag-num">1</span> General Submission Guidelines
+            </button>
+          </h3>
+          <div id="g1" class="accordion-collapse collapse show" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <ul class="dot-list mt-0">
+                <li><strong>Eligibility:</strong> Submissions are welcomed from all qualified oral and maxillofacial surgeons / postgraduate surgical trainees in Oral and Maxillofacial Surgery. Abstracts must be original.</li>
+                <li><strong>Language:</strong> All abstracts must be submitted in English.</li>
+                <li><strong>Abstract format:</strong> Must follow the guidelines suggested by the Scientific Committee.</li>
+                <li><strong>In-person presentation is mandatory</strong> for all accepted abstracts. Virtual presentations will not be considered.</li>
+                <li>All presenting authors must <a href="{{ route('registration.form') }}">register for the 7th ACOMS</a>. Abstracts will not be included in the programme unless the presenter is registered.</li>
+                <li><strong>Conflict of interest:</strong> All presenters must disclose any potential conflicts of interest.</li>
+                <li>Presenters may select their presentation preference (Oral / e-Poster) and category (Prize / Free). However, the Scientific Committee reserves the right to allocate the preferences.</li>
+                <li>Abstracts not selected for oral presentation may be eligible for e-poster.</li>
+                <li>All abstracts must be submitted through this abstract submission portal. <strong>Submissions by email will not be considered</strong> for review.</li>
+                <li>Figures, tables, and graphs are not permitted in submissions but may be included in presentations.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g2" aria-expanded="false" aria-controls="g2">
+              <span class="ag-num">2</span> Abstract Structure
+            </button>
+          </h3>
+          <div id="g2" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <p class="content-text">All abstracts must be submitted following the instructions below.</p>
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <div class="ag-card">
+                    <h4>For Research Papers / Reviews</h4>
+                    <ul class="dot-list">
+                      <li><strong>Title:</strong> concise and descriptive (limit: 15 words).</li>
+                      <li><strong>Authors and affiliations:</strong> list all authors and their institutions. The name and designation of the presenting author must be entered in the submission portal.</li>
+                      <li>IMRD format, <strong>maximum 300 words</strong> excluding references, font Times New Roman 14.</li>
+                      <li>Structured as: Introduction, Aims &amp; Objectives, Materials &amp; Methods, Results, Discussion, Conclusion.</li>
+                      <li>A maximum of <strong>four references</strong> is permitted.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="ag-card">
+                    <h4>For Case Reports / Series</h4>
+                    <ul class="dot-list">
+                      <li><strong>Title:</strong> accurate and concise (not exceeding 15 words).</li>
+                      <li><strong>Maximum 300 words</strong>, excluding references.</li>
+                      <li>Font: Times New Roman 14.</li>
+                      <li>Structured as: Introduction, Case Description, Discussion, Conclusion.</li>
+                      <li>A maximum of <strong>four references</strong> is permitted.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g3" aria-expanded="false" aria-controls="g3">
+              <span class="ag-num">3</span> Categories for Abstract Submission
+            </button>
+          </h3>
+          <div id="g3" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <p class="content-text">Abstracts should be submitted under one of the following categories in the submission form:</p>
+              <ul class="venue-tags">
+                <li>Craniofacial Trauma</li>
+                <li>Craniofacial Deformity — Cleft Lip Palate; Distraction; Orthognathic Surgery</li>
+                <li>Dentoalveolar Surgery</li>
+                <li>Dental Implantology</li>
+                <li>Facial Esthetic Surgery</li>
+                <li>Head and Neck Oncology</li>
+                <li>Oral and Maxillofacial Pathology &amp; Infection</li>
+                <li>Orofacial Pain &amp; TMJ</li>
+                <li>Patient Safety, Ethics &amp; Outcomes</li>
+                <li>Practice Management</li>
+                <li>Research &amp; Clinical Studies</li>
+                <li>Others</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g4" aria-expanded="false" aria-controls="g4">
+              <span class="ag-num">4</span> Prize Paper (Oral) / e-Poster Category
+            </button>
+          </h3>
+          <div id="g4" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <ul class="dot-list mt-0">
+                <li>Only <strong>postgraduates / trainees</strong> are eligible to submit abstracts in this category.</li>
+                <li>Last date for submission of abstracts: <strong>25 October 2026</strong>.</li>
+                <li>Submitted abstracts will be reviewed and shortlisted by the Scientific Committee. Only a few papers / e-posters from all the abstracts submitted in this category will be selected for presentation.</li>
+                <li>Selected presenters will be informed by email after <strong>15 November 2026</strong>.</li>
+                <li>The final presentation file (oral / e-poster) must be uploaded in its respective format before <strong>15 February 2027</strong>.</li>
+                <li>Registration for the conference is mandatory before submitting the presentation file.</li>
+                <li>Abstracts not selected in this category will be permitted to be presented as a free paper / e-poster during the conference.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g5" aria-expanded="false" aria-controls="g5">
+              <span class="ag-num">5</span> Free Paper (Oral) / e-Poster Category
+            </button>
+          </h3>
+          <div id="g5" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <ul class="dot-list mt-0">
+                <li>Last date for submission of abstracts: <strong>8 November 2026</strong>.</li>
+                <li>Notification of acceptance will be sent after <strong>25 November 2026</strong>.</li>
+                <li>The final presentation (paper / e-poster) must be uploaded in its respective format before <strong>10 February 2027</strong>.</li>
+                <li>Registration for the conference is mandatory before submitting the presentation file.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g6" aria-expanded="false" aria-controls="g6">
+              <span class="ag-num">6</span> Paper (Oral) Presentation Guidelines
+            </button>
+          </h3>
+          <div id="g6" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <ul class="dot-list mt-0">
+                <li>Oral presentation duration is <strong>8 minutes only</strong>.</li>
+                <li>The chairpersons may allow questions and clarifications from delegates in an additional <strong>2 minutes</strong> allocated for discussion.</li>
+                <li>The presentation must be made in PowerPoint and saved in <strong>.pptx</strong> format.</li>
+                <li>Last date for file upload: <strong>15 February 2027</strong> for the Prize category; <strong>10 February 2027</strong> for the Free (Non-prize) category.</li>
+                <li>Presentations must be uploaded before the last date. Files uploaded after that will not be accepted for presentation.</li>
+                <li>Registration for the conference is mandatory before submitting the presentation file.</li>
+                <li>The certificate of presentation will be given to the presenting author only.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 -->
+        <div class="accordion-item">
+          <h3 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#g7" aria-expanded="false" aria-controls="g7">
+              <span class="ag-num">7</span> e-Poster Guidelines
+            </button>
+          </h3>
+          <div id="g7" class="accordion-collapse collapse" data-bs-parent="#absGuide">
+            <div class="accordion-body">
+              <ul class="dot-list mt-0">
+                <li>Upload your e-poster according to the theme as a <strong>single-page PDF, JPEG, or PowerPoint file</strong> in landscape orientation (<strong>16:9</strong> page setup).</li>
+                <li>Last date for file upload: <strong>15 February 2027</strong> for the Prize category; <strong>10 February 2027</strong> for the Free (Non-prize) category.</li>
+                <li>Presentations must be uploaded before the last date. Files uploaded after that will not be accepted for presentation.</li>
+                <li>Registration for the conference is mandatory before submitting the presentation file.</li>
+                <li>e-Posters will be displayed on LED screens in auto-play mode.</li>
+                <li>Slide shows and multiple slides are not allowed.</li>
+                <li>Include your e-poster number when uploading your file (e-poster numbers will be allotted).</li>
+                <li>Pictures, tables, or graphs can be included.</li>
+                <li>Music, video, and GIF files are not allowed.</li>
+                <li>For prize e-posters, the time of your evaluation by the judges will be communicated to you, and your presence at that time is mandatory for evaluation and scoring.</li>
+                <li>Only presenting authors will be awarded e-poster presentation certificates.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 8 -->
+      <div class="stay-note mt-4">
+        <i class="fa-solid fa-headset"></i>
+        <p>
+          <strong>Technical support and inquiries:</strong> if you run into technical issues while submitting your
+          abstract, or have any questions, please contact the Scientific Committee at
+          <a href="mailto:scientificacoms2027@gmail.com">scientificacoms2027@gmail.com</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="content-block" id="submit-abstract">
+      <div class="sec-head">
+        <span class="sec-bar"></span>
+        <h2>Submit Your Abstract</h2>
+        <span class="sec-line"></span>
+      </div>
+
+      <!-- Instructions -->
+      <div class="instructions">
+        <p class="ins-title"><i class="fa-solid fa-circle-info"></i> Before you submit</p>
+        <ul>
+          <li>Complete every required field marked with an asterisk (<span style="color:var(--red)">*</span>).</li>
+          <li>The abstract body should not exceed <strong>300 words</strong>, excluding the title and references, with a maximum of <strong>four references</strong>.</li>
+          <li>Presentation files are collected later, once your abstract is accepted: <strong>.pptx</strong> for oral presentations; a single-page <strong>PDF, JPEG, or PowerPoint</strong> file for e-posters.</li>
+        </ul>
+      </div>
 
       <!-- FORM -->
       <form class="form-card" id="abstractForm" method="POST" action="{{ route('abstract.store') }}" enctype="multipart/form-data" novalidate>
@@ -108,6 +365,13 @@
               <input type="email" class="form-control" id="email" name="email"
                      placeholder="you@example.com" value="{{ old('email') }}" required>
               <div class="field-hint">We will send submission updates to this address.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="phone">Phone Number <span class="req">*</span></label>
+              <input type="tel" class="form-control" id="phone" name="phone"
+                     placeholder="+977 98XXXXXXXX" value="{{ old('phone') }}" autocomplete="tel" required>
+              <div class="field-hint">Include your country code.</div>
             </div>
 
             <div class="col-md-6">
@@ -194,7 +458,7 @@
             <div class="col-12">
               <label class="form-label" for="abstractBody">Abstract Body <span class="req">*</span></label>
               <textarea class="form-control" id="abstractBody" name="abstractBody" rows="9"
-                        placeholder="Structure your abstract under headings such as Background, Methods, Results, and Conclusion."
+                        placeholder="Research / Review: Introduction, Aims &amp; Objectives, Materials &amp; Methods, Results, Discussion, Conclusion. Case Report / Series: Introduction, Case Description, Discussion, Conclusion."
                         required>{{ old('abstractBody') }}</textarea>
               <div class="char-count" id="wordCount">0 / 300 words</div>
             </div>
@@ -202,11 +466,14 @@
             <div class="col-12">
               <label class="form-label" for="references">References</label>
               <textarea class="form-control" id="references" name="references" rows="3"
-                        placeholder="List any references cited in your abstract (optional).">{{ old('references') }}</textarea>
+                        placeholder="List any references cited in your abstract (optional, maximum four).">{{ old('references') }}</textarea>
             </div>
           </div>
         </div>
 
+        {{-- Upload Presentation is hidden for now: presentation files are collected
+             after acceptance. The controller still accepts an optional presFile,
+             so restoring this block re-enables uploads.
         <!-- Upload -->
         <div class="form-section">
           <p class="form-section-title"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Presentation</p>
@@ -214,8 +481,8 @@
           <label class="upload-drop" for="presFile" id="uploadDrop">
             <i class="fa-solid fa-cloud-arrow-up d-block"></i>
             <div class="ud-main"><span>Click to upload</span> or drag and drop your file</div>
-            <div class="ud-sub">For oral presentation / e-poster — PDF, PPT, or PPTX (max 50 MB)</div>
-            <input type="file" id="presFile" name="presFile" accept=".pdf,.ppt,.pptx">
+            <div class="ud-sub">Oral presentation: PPTX · e-Poster: single-page PDF, JPEG, or PowerPoint (max 50 MB)</div>
+            <input type="file" id="presFile" name="presFile" accept=".pdf,.ppt,.pptx,.jpg,.jpeg">
           </label>
           <div class="file-chosen" id="fileChosen">
             <i class="fa-solid fa-file-lines"></i>
@@ -225,6 +492,7 @@
             </button>
           </div>
         </div>
+        --}}
 
         <!-- Actions -->
         <div class="form-actions">

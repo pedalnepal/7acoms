@@ -9,6 +9,8 @@ A new abstract has been submitted through the website.
 - **Authors:** {{ $abstract->authors ?? '—' }}
 - **Affiliation:** {{ $abstract->affiliation ?? '—' }}
 - **Presenting Author:** {{ $abstract->presenting_author ?? '—' }}
+- **Email:** {{ $abstract->email ?? '—' }}
+- **Phone:** {{ $abstract->phone ?? '—' }}
 - **Designation:** {{ $abstract->designation ? ucfirst($abstract->designation) : '—' }}
 - **Topic Category:** {{ $abstract->category ?? '—' }}
 - **Presentation Type:** {{ $abstract->pres_type ? ucfirst($abstract->pres_type) : '—' }}

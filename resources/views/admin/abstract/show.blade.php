@@ -17,6 +17,7 @@
                         <tr><th>Affiliation</th><td>{{$abstract->affiliation}}</td></tr>
                         <tr><th>Presenting Author</th><td>{{$abstract->presenting_author}}</td></tr>
                         <tr><th>Email</th><td>{{$abstract->email ?: '—'}}</td></tr>
+                        <tr><th>Phone</th><td>{{$abstract->phone ?: '—'}}</td></tr>
                         <tr><th>Designation</th><td>{{ $abstract->designation ? ucfirst($abstract->designation) : '—' }}</td></tr>
                         <tr><th>Topic Category</th><td>{{$abstract->category}}</td></tr>
                         <tr><th>Presentation Type</th><td>{{ $abstract->pres_type ? ucfirst($abstract->pres_type) : '—' }}</td></tr>

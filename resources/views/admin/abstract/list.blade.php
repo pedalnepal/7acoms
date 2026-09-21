@@ -32,7 +32,7 @@
             @endif
             <div class="col-sm-6 col-md-4">
                 <input type="search" name="q" value="{{ $search }}" class="form-control form-control-sm"
-                       placeholder="Search title, presenting author or email…">
+                       placeholder="Search title, presenting author, email or phone…">
             </div>
             <div class="col-sm-4 col-md-3">
                 <select name="type" class="form-select form-select-sm">

@@ -581,6 +581,334 @@
     }
     .dot-list li strong { color: var(--text); font-weight: 600; }
 
+    /* ---------- VENUE ---------- */
+    .venue-photo {
+      margin: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border-top: 3px solid var(--red);
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+    }
+    .venue-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+
+    .venue-tags {
+      list-style: none;
+      padding: 0;
+      margin: 1.2rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+    }
+    .venue-tags li {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--bg-gray);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: .45rem 1rem;
+    }
+    .venue-tags li i { color: var(--red); }
+
+    .venue-distances {
+      list-style: none;
+      padding: 0;
+      margin: 1.2rem 0 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .venue-distances li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .venue-distances li:last-child { border-bottom: 0; }
+    .venue-distances .vd-name { font-size: .95rem; font-weight: 600; color: var(--text); }
+    .venue-distances .vd-note {
+      display: block;
+      font-size: .85rem;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: .15rem;
+    }
+    .venue-distances .vd-km {
+      flex-shrink: 0;
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--red);
+      background: #fdf2f3;
+      border-radius: 40px;
+      padding: .3rem .8rem;
+    }
+
+    .venue-map {
+      position: relative;
+      height: 420px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .venue-map iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .venue-map-link { color: var(--red); font-weight: 600; text-decoration: none; }
+    .venue-map-link:hover { text-decoration: underline; }
+    @media (max-width: 767px) {
+      .venue-map { height: 300px; }
+      .venue-distances li { padding: .8rem 1rem; }
+    }
+
+    /* ---------- ACCOMMODATION ---------- */
+    .stay-note {
+      display: flex;
+      align-items: flex-start;
+      gap: .8rem;
+      background: #fdf2f3;
+      border-left: 4px solid var(--red);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+    }
+    .stay-note i { color: var(--red); font-size: 1.1rem; margin-top: .2rem; }
+    .stay-note p { margin: 0; font-size: .95rem; color: var(--text); line-height: 1.7; }
+
+    .hotel-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+    .hotel-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: 3px solid #8a99b5;
+      border-radius: 8px;
+      padding: 1.8rem 1.7rem;
+      box-shadow: 0 6px 24px rgba(0,0,0,.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .hotel-card.is-venue { border-top-color: var(--red); }
+    .hotel-head { display: flex; align-items: flex-start; gap: .9rem; margin-bottom: 1rem; }
+    .hotel-num {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg-gray);
+      color: var(--red);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hotel-card.is-venue .hotel-num { background: var(--red); color: #fff; }
+    .hotel-name { font-size: 1.25rem; font-weight: 700; color: var(--text); margin: .3rem 0 0; line-height: 1.3; }
+    .hotel-badge {
+      display: inline-block;
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--red);
+      background: #fdf2f3;
+      border-radius: 40px;
+      padding: .3rem .8rem;
+      margin-top: .5rem;
+    }
+    .hotel-best {
+      font-size: .92rem;
+      color: var(--text);
+      background: var(--bg-gray);
+      border-radius: 6px;
+      padding: .6rem .9rem;
+      margin: 0 0 1rem;
+      line-height: 1.6;
+    }
+    .hotel-best strong { color: var(--red); }
+    .hotel-contact {
+      list-style: none;
+      padding: 1rem 0 0;
+      margin: auto 0 0;
+      border-top: 1px solid var(--border);
+    }
+    .hotel-contact li {
+      display: flex;
+      align-items: flex-start;
+      gap: .7rem;
+      font-size: .88rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: .45rem;
+      word-break: break-word;
+    }
+    .hotel-contact li:last-child { margin-bottom: 0; }
+    .hotel-contact i { width: 16px; flex-shrink: 0; color: var(--red); margin-top: .3rem; text-align: center; }
+    .hotel-contact a { color: var(--text); text-decoration: none; font-weight: 500; }
+    .hotel-contact a:hover { color: var(--red); }
+    .hotel-contact .sep { color: #8a99b5; margin: 0 .2rem; }
+
+    .tip-card {
+      height: 100%;
+      background: var(--bg-gray);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem 1.4rem;
+    }
+    .tip-card .ci-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--red);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: .9rem;
+    }
+    .tip-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0 0 .5rem; }
+    .tip-card p { font-size: .9rem; color: var(--muted); line-height: 1.7; margin: 0; }
+
+    @media (max-width: 991px) {
+      .hotel-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 575px) {
+      .hotel-card { padding: 1.4rem 1.2rem; }
+    }
+
+    /* ---------- TRAVEL INFO ---------- */
+    .travel-sub {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 1rem;
+    }
+    .travel-sub i { color: var(--red); }
+
+    .fee-table-wrap:has(.travel-table) { max-width: 640px; }
+    .fee-table.travel-table,
+    .fee-table.compact-table { min-width: 0; }
+
+    .travel-pill {
+      display: inline-block;
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--red);
+      background: #fdf2f3;
+      border-radius: 40px;
+      padding: .3rem .8rem;
+      margin-bottom: .7rem;
+    }
+
+    .travel-callout {
+      background: var(--bg-gray);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--navy);
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+    }
+    .travel-callout p { margin: 0 0 .5rem; font-size: .92rem; color: var(--muted); line-height: 1.7; }
+    .travel-callout p:last-child { margin-bottom: 0; }
+    .travel-callout strong { color: var(--text); }
+    .travel-callout a { color: var(--red); font-weight: 600; text-decoration: none; }
+    .travel-callout a:hover { text-decoration: underline; }
+
+    .weather-card {
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      background: var(--bg-gray);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--red);
+      border-radius: 8px;
+    }
+    .weather-card .wc-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.4rem .6rem;
+      border-right: 1px solid var(--border);
+    }
+    .weather-card .wc-item:last-child { border-right: 0; }
+    .weather-card i { color: var(--red); font-size: 1.4rem; margin-bottom: .5rem; }
+    .weather-card .wc-val { font-size: 1.35rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .weather-card .wc-label {
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #8a99b5;
+      margin-top: .25rem;
+    }
+
+    .info-row {
+      height: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+    }
+
+    /* ---------- ABSTRACT GUIDELINES ---------- */
+    .abs-jump { color: var(--red); font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .abs-jump:hover { text-decoration: underline; }
+
+    .fee-table.compact-table tbody th { width: 40%; }
+    .fee-table.compact-table tbody td { font-weight: 600; color: var(--text); }
+    @media (max-width: 575px) {
+      .fee-table.compact-table { font-size: .8rem; }
+      .fee-table.compact-table tbody td { white-space: normal; }
+    }
+
+    .abs-guide .accordion-item {
+      border: 1px solid var(--border);
+      border-radius: 8px !important;
+      margin-bottom: .75rem;
+      overflow: hidden;
+    }
+    .abs-guide .accordion-button {
+      gap: .8rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      padding: 1rem 1.2rem;
+      box-shadow: none;
+    }
+    .abs-guide .accordion-button:not(.collapsed) { background: #fdf2f3; color: var(--red); }
+    .abs-guide .accordion-button:focus { box-shadow: 0 0 0 .2rem rgba(173,0,41,.15); }
+    .abs-guide .ag-num {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--bg-gray);
+      color: var(--red);
+      font-size: .85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .abs-guide .accordion-button:not(.collapsed) .ag-num { background: var(--red); color: #fff; }
+    .abs-guide .accordion-body { padding: 1.3rem 1.4rem 1.5rem; }
+    .abs-guide .dot-list a { color: var(--red); font-weight: 600; text-decoration: none; }
+    .abs-guide .dot-list a:hover { text-decoration: underline; }
+    .ag-card {
+      height: 100%;
+      background: var(--bg-gray);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.3rem 1.3rem 1.4rem;
+    }
+    .ag-card h4 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; }
+    .stay-note a { color: var(--red); font-weight: 600; text-decoration: none; word-break: break-word; }
+    .stay-note a:hover { text-decoration: underline; }
+
     /* ---------- DEADLINE STRIP ---------- */
     .deadline-row { margin-bottom: 3rem; }
     .deadline-card {

@@ -187,6 +187,7 @@ class FrontController extends Controller
             'affiliation'      => 'required|string|max:255',
             'presentingAuthor' => 'required|string|max:255',
             'email'            => 'required|email|max:255',
+            'phone'            => 'required|string|max:50',
             'designation'      => 'required|string|max:100',
             'category'         => 'required|string|max:255',
             'presType'         => 'required|string|max:100',
@@ -194,9 +195,9 @@ class FrontController extends Controller
             'presCategory'     => 'required|string|max:50',
             'abstractBody'     => 'required|string',
             'references'       => 'nullable|string',
-            'presFile'         => 'nullable|file|mimes:pdf,ppt,pptx|max:51200',
+            'presFile'         => 'nullable|file|mimes:pdf,ppt,pptx,jpg,jpeg|max:51200',
         ], [
-            'presFile.mimes' => 'The presentation must be a PDF, PPT, or PPTX file.',
+            'presFile.mimes' => 'The presentation must be a PDF, PPT, PPTX, or JPEG file.',
             'presFile.max'   => 'The presentation may not be larger than 50 MB.',
         ]);
 
@@ -206,6 +207,7 @@ class FrontController extends Controller
         $abstract->affiliation       = $request->affiliation;
         $abstract->presenting_author = $request->presentingAuthor;
         $abstract->email             = $request->email;
+        $abstract->phone             = $request->phone;
         $abstract->designation       = $request->designation;
         $abstract->category          = $request->category;
         $abstract->pres_type         = $request->presType;
@@ -254,6 +256,60 @@ class FrontController extends Controller
 
         return redirect()->route('abstract.submission')
             ->with('success', 'Thank you! Your abstract has been submitted successfully and is now under review by the scientific committee.');
+    }
+
+    public function venueDetails()
+    {
+        // The content lives in the view; an admin-created page with this
+        // permalink only supplies the SEO meta, so the route works without one.
+        $page = \App\Models\Page::where('permalink', 'venue-details')->first();
+
+        $data = [
+            'page'             => $page,
+            'title'            => $page->meta_title ?? $page->title ?? 'Venue Details',
+            'meta_description' => $page->meta_description ?? 'The 7th ACOMS Trainee Conference 2027 venue: Radisson Hotel Kathmandu, Lazimpat.',
+            'meta_keyword'     => $page->meta_keyword ?? '',
+            'meta_robot'       => $page->meta_robot ?? '',
+            'image'            => $page && $page->media ? $page->media->get_attachment_url() : '',
+        ];
+
+        return view('front.page.venue-details', $data);
+    }
+
+    public function accommodation()
+    {
+        // As with venueDetails(), the content lives in the view; an optional
+        // admin page with this permalink only supplies the SEO meta.
+        $page = \App\Models\Page::where('permalink', 'accommodation')->first();
+
+        $data = [
+            'page'             => $page,
+            'title'            => $page->meta_title ?? $page->title ?? 'Accommodation',
+            'meta_description' => $page->meta_description ?? 'Where to stay for the 7th ACOMS Trainee Conference 2027: hotels at and near the venue in Lazimpat, Kathmandu.',
+            'meta_keyword'     => $page->meta_keyword ?? '',
+            'meta_robot'       => $page->meta_robot ?? '',
+            'image'            => $page && $page->media ? $page->media->get_attachment_url() : '',
+        ];
+
+        return view('front.page.accommodation', $data);
+    }
+
+    public function travelInfo()
+    {
+        // As with venueDetails(), the content lives in the view; an optional
+        // admin page with this permalink only supplies the SEO meta.
+        $page = \App\Models\Page::where('permalink', 'travel-info')->first();
+
+        $data = [
+            'page'             => $page,
+            'title'            => $page->meta_title ?? $page->title ?? 'Travel Info',
+            'meta_description' => $page->meta_description ?? 'Travel information for the 7th ACOMS Trainee Conference 2027: flights, visas, airport transfers, money, weather and tips for Kathmandu.',
+            'meta_keyword'     => $page->meta_keyword ?? '',
+            'meta_robot'       => $page->meta_robot ?? '',
+            'image'            => $page && $page->media ? $page->media->get_attachment_url() : '',
+        ];
+
+        return view('front.page.travel-info', $data);
     }
 
     public function organizingCommittee()

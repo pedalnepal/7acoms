@@ -5,8 +5,6 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
-use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 
@@ -37,8 +35,6 @@ class AppServiceProvider extends ServiceProvider
         // Any authenticated admin (web) user has full access — roles/permissions
         // are not required in this app. This grants every ability (covers @can
         // gates and Spatie's permission: middleware, which uses canAny()).
-        // Front-end customers (CustomerUser) are unaffected: returning null lets
-        // their gate checks fall through to the normal logic.
         Gate::before(function ($user, string $ability) {
             return $user instanceof User ? true : null;
         });
@@ -50,23 +46,5 @@ class AppServiceProvider extends ServiceProvider
                 config(['setting.' . $setting->name => $setting->value]);
             }
         }
-
-        // Unauthenticated "user/*" (customer) routes should bounce to the
-        // customer login, not the admin login (the framework default).
-        Authenticate::redirectUsing(function ($request) {
-            return $request->is('user/*')
-                ? route('user.login')
-                : route('login');
-        });
-
-        // Already-authenticated customers hitting a "guest:customer" route
-        // (e.g. login/register/reset-password) should land on the customer
-        // dashboard, not the framework's default "dashboard" route, which
-        // is the admin dashboard in this app.
-        RedirectIfAuthenticated::redirectUsing(function ($request) {
-            return $request->is('user/*')
-                ? route('user.dashboard')
-                : route('dashboard');
-        });
     }
 }
