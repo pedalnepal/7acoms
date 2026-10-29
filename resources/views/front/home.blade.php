@@ -1,6 +1,31 @@
 @extends('front.common.layout')
 @section('content')
 
+<!-- Modal -->
+<div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <img src="images/7th-acom-notice.jpeg" alt="final call notice">
+      </div>
+    </div>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('noticeModal');
+    if (el && window.bootstrap) {
+      new bootstrap.Modal(el).show();
+    }
+  });
+</script>
+@endpush
+@endif
 
 <!-- ============================================================
      HERO
