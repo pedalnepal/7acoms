@@ -50,8 +50,10 @@
                     aria-label="Close"></button>
 
             <div class="modal-body">
-                <img src="{{ asset('images/7th-acom-notice.jpeg') }}"
-                     alt="Final call notice">
+                <a href="https://7acomstrainee.com/abstract-submission">
+                    <img src="{{ asset('images/7th-acom-notice.jpeg') }}"
+                         alt="Final call notice. Go to abstract submission">
+                </a>
             </div>
         </div>
     </div>
