@@ -20,7 +20,7 @@ return [
     // Inclusive cut-off for each tier. A payment made after the last date
     // listed here falls into the final tier.
     'tiers' => [
-        'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-11-15'],
+        'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-12-10'],
         'regular' => ['label' => 'Regular Registration',    'until' => '2027-01-15'],
         'late'    => ['label' => 'Late Registration',       'until' => null],
     ],

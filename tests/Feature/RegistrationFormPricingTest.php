@@ -28,7 +28,7 @@ class RegistrationFormPricingTest extends TestCase
         // see config/registration.php.
         config([
             'registration.tiers' => [
-                'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-11-15'],
+                'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-12-10'],
                 'regular' => ['label' => 'Registration', 'until' => '2027-01-15'],
                 'late'    => ['label' => 'Late Registration', 'until' => null],
             ],
@@ -76,7 +76,7 @@ class RegistrationFormPricingTest extends TestCase
 
     public function test_the_form_moves_to_the_regular_price_once_the_deadline_passes(): void
     {
-        CarbonImmutable::setTestNow('2026-12-01');
+        CarbonImmutable::setTestNow('2026-12-11');
 
         $content = $this->get(route('registration.form'))->assertOk()->getContent();
 

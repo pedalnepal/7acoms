@@ -27,7 +27,7 @@ class RegistrationDetailsPricingTest extends TestCase
 
         config([
             'registration.tiers' => [
-                'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-11-15'],
+                'early'   => ['label' => 'Early Bird Registration', 'until' => '2026-12-10'],
                 'regular' => ['label' => 'Registration', 'until' => '2027-01-15'],
                 'late'    => ['label' => 'Late Registration', 'until' => null],
             ],
@@ -74,7 +74,7 @@ class RegistrationDetailsPricingTest extends TestCase
 
     public function test_the_regular_column_is_highlighted_once_the_deadline_passes(): void
     {
-        CarbonImmutable::setTestNow('2026-12-01');
+        CarbonImmutable::setTestNow('2026-12-11');
 
         $content = $this->get(route('registration.details'))->assertOk()->getContent();
 
@@ -93,7 +93,7 @@ class RegistrationDetailsPricingTest extends TestCase
     {
         Page::create(['title' => 'Registration Form', 'permalink' => 'registration-form']);
 
-        foreach (['2026-10-01' => 0, '2026-12-01' => 1, '2027-02-01' => 2] as $date => $column) {
+        foreach (['2026-10-01' => 0, '2026-12-11' => 1, '2027-02-01' => 2] as $date => $column) {
             CarbonImmutable::setTestNow($date);
 
             $detailsFee = $this->feeCellFor(

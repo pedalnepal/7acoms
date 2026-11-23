@@ -50,9 +50,9 @@
                     aria-label="Close"></button>
 
             <div class="modal-body">
-                <a href="https://7acomstrainee.com/abstract-submission">
-                    <img src="{{ asset('images/7th-acom-notice.jpeg') }}"
-                         alt="Final call notice. Go to abstract submission">
+                <a href="{{ request()->is('abstract-submission') ? 'https://7acomstrainee.com/abstract-submission' : 'https://7acomstrainee.com/registration-details' }}">
+                    <img src="{{ asset(request()->is('abstract-submission') ? 'images/7th-acom-notice.jpeg' : 'images/early-bird-registration.jpeg') }}"
+                         alt="{{ request()->is('abstract-submission') ? 'Final call notice. Go to abstract submission' : 'Early Bird Registration. Go to registration details' }}">
                 </a>
             </div>
         </div>
